@@ -1,3 +1,17 @@
+<script lang="ts">
+    import ogImage from "$lib/suzuka.png";
+</script>
+
+<svelte:head>
+    <meta property="og:title" content="Season 3 Race 3 Prediction Form" />
+    <title>Season 3 Race 3 Prediction Form | Holocord F1 Watchalong Prediction Championship</title>
+    <meta property="og:description" content="Submit predictions for Suzuka, Japan" />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="240" />
+    <meta property="og:image:height" content="180" />
+    <meta property="twitter:card" content="summary" />
+</svelte:head>
+
 <div class="container">
     <a class="interactive-button" href="/">
         <span>Return to S3 Standings</span>

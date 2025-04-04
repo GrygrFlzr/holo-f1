@@ -1,9 +1,21 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
+    import pngLogo from '$lib/logo.png';
     let { data }: PageProps = $props();
+    const rankEmojis = ['🥇', '🥈', '🥉'];
+    const description = data.teams
+        .filter(team => team.rank <= 3)
+        .map(team => `${rankEmojis[team.rank - 1]} ${team.name} // ${team.points}`)
+        .join('\n');
 </script>
 
 <svelte:head>
+    <meta property="og:title" content="Season 3 Standings" />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={pngLogo} />
+    <meta property="og:image:width" content="1193" />
+    <meta property="og:image:height" content="188" />
+    <meta property="twitter:card" content="summary_large_image" />
     <title>Season 3 Standings | Holocord F1 Watchalong Prediction Championship</title>
 </svelte:head>
 

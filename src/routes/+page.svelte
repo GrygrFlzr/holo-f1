@@ -7,6 +7,10 @@
     <title>Season 3 Standings | Holocord F1 Watchalong Prediction Championship</title>
 </svelte:head>
 
+<a class="interactive-button" href="/season-3/submit">
+    <span>Predict the next Race: Suzuka, Japan</span>
+</a>
+
 <h2 class="page-header">Season 3 Standings</h2>
 
 <ul class="team-rankings">
@@ -56,6 +60,29 @@
 </ul>
 
 <style>
+    .interactive-button {
+        max-width: 30ch;
+        display: flex;
+        justify-content: center;
+        font-size: 2rem;
+        text-decoration: none;
+        border-radius: 2rem;
+        background-color: var(--f1-red);
+        margin: 2rem auto;
+        padding: .5rem 2rem;
+        color: var(--f1-white);
+        box-shadow: 0 4px 6px -1px hsl(from var(--f1-red) h s 30%),
+                    0 2px 4px -2px hsl(from var(--f1-red) h s 30%);
+    }
+    .interactive-button span {
+        display: block;
+        font-style: oblique 10deg;
+    }
+    .interactive-button:hover {
+        background-color: hsl(from var(--f1-red) h s 50%);
+        box-shadow: 0 4px 6px -1px hsl(from var(--f1-red) h s 30%),
+                    0 2px 4px -2px hsl(from var(--f1-red) h s 30%);
+    }
     .page-header {
         font-weight: 300;
         font-size: 3rem;

@@ -61,6 +61,7 @@
 
 <style>
     .interactive-button {
+        text-align: center;
         max-width: 30ch;
         display: flex;
         justify-content: center;

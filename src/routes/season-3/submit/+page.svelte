@@ -1,5 +1,5 @@
 <script lang="ts">
-    import ogImage from "$lib/suzuka.png";
+    import ogImage from "$lib/suzuka.png?no-inline";
 </script>
 
 <svelte:head>

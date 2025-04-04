@@ -5,6 +5,74 @@ export const load: PageLoad = async ({ fetch }) => {
 	const response = await fetch(indivPtsUrl);
     const sheetData = await response.text();
 
+    type Team = {
+        name: string;
+        color: string;
+        repImage: string;
+    };
+    const teams: Team[] = [
+        {
+            name: "Scuderia KFP",
+            color: '#ff411c',
+            repImage: 'https://hololive.hololivepro.com/wp-content/uploads/2020/07/Takanashi-Kiara_list_thumb.png',
+        },
+        {
+            name: "Amelia's Driver Bureau",
+            color: '#f8db92',
+            repImage: 'https://hololive.hololivepro.com/wp-content/uploads/2020/07/Watson-Amelia_list_thumb.png',
+        },
+        {
+            name: "AMG Reine's [Reidacted]",
+            color: '#0f53ba',
+            repImage: 'https://hololive.hololivepro.com/wp-content/uploads/2020/07/Pavolia-Reine_list_thumb.png',
+        },
+        {
+            name: "Lamy's Land of Lawnmowers",
+            color: '#6abadf',
+            repImage: 'https://hololive.hololivepro.com/wp-content/uploads/2020/06/Yukihana-Lamy_list_thumb.png',
+        },
+        {
+            name: "IRyS' Stage Racing",
+            color: '#ff0335',
+            repImage: 'https://hololive.hololivepro.com/wp-content/uploads/2020/07/IRyS_list_thumb.png',
+        },
+        {
+            name: "Shiranui Flare's Elfriend F1",
+            color: '#fe3d1c',
+            repImage: 'https://hololive.hololivepro.com/wp-content/uploads/2020/06/Shiranui-Flare_list_thumb.png',
+        },
+        {
+            name: "Nerissa's Birdgarage",
+            color: 'darkblue',
+            repImage: 'https://hololive.hololivepro.com/wp-content/uploads/2021/07/Nerissa-Ravencroft_list_thumb.png',
+        },
+        {
+            name: "AZKi Pioneer Racing",
+            color: '#fc3488',
+            repImage: 'https://hololive.hololivepro.com/wp-content/uploads/2020/06/AZKi_list_thumb.png',
+        },
+        {
+            name: "Mumei's Sancturacing",
+            color: 'brown',
+            repImage: 'https://hololive.hololivepro.com/wp-content/uploads/2020/07/Nanashi-Mumei_list_thumb.png',
+        },
+        {
+            name: "Alfa Roneo Racing",
+            color: 'orange',
+            repImage: 'https://hololive.hololivepro.com/wp-content/uploads/2020/06/Momosuzu-Nene_list_thumb.png',
+        },
+        {
+            name: "Nun-Nun Speedstar Racing",
+            color: '#266aff',
+            repImage: 'https://hololive.hololivepro.com/wp-content/uploads/2021/05/tokino_sora_thumb.png',
+        },
+        {
+            name: "Shiorin Aramco Racing",
+            color: 'grey',
+            repImage: 'https://hololive.hololivepro.com/wp-content/uploads/2021/07/Shiori-Novella_list_thumb.png',
+        },
+    ];
+
     const individuals = sheetData.split('\n').map(
         row => {
             const fields = row.split('\t');
@@ -29,5 +97,35 @@ export const load: PageLoad = async ({ fetch }) => {
     individuals.shift();
     individuals.shift();
 
-    return { individuals };
+    const annotatedTeams = teams.map(team => ({
+            ...team,
+            scorers: individuals
+                .map(indiv => ({
+                    ...indiv,
+                    points: indiv.points.filter(roundRecord => roundRecord.team === team.name)
+                }))
+                .filter(indiv => indiv.points.length > 0)
+                .map(indiv => ({
+                    name: indiv.name,
+                    cumulativePts: indiv.points.map(
+                        pts => pts.roundScore
+                    ).reduce((a, b) => a + b, 0),
+                }))
+                .sort((a, b) => b.cumulativePts - a.cumulativePts)
+        })).map(team => ({
+            ...team,
+            points: team.scorers
+                .map(member => member.cumulativePts)
+                .reduce((a, b) => a + b, 0),
+        })).sort((a, b) => b.points - a.points);
+
+    const sortedPts = annotatedTeams.map(team => team.points);
+
+    return {
+        teams: annotatedTeams.map(team => ({
+            rank: sortedPts.indexOf(team.points) + 1,
+            ...team,
+        })),
+        individuals
+    };
 };

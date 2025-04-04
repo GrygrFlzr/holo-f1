@@ -1,125 +1,16 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
     let { data }: PageProps = $props();
-
-    type Team = {
-        rank: number;
-        points: number;
-        name: string;
-        color: string;
-        repImage: string;
-    };
-    const teams: Team[] = [
-        {
-            rank: 1,
-            points: 22,
-            name: "Scuderia KFP",
-            color: '#ff411c',
-            repImage: 'https://hololive.hololivepro.com/wp-content/uploads/2020/07/Takanashi-Kiara_list_thumb.png',
-        },
-        {
-            rank: 2,
-            points: 6,
-            name: "Amelia's Driver Bureau",
-            color: '#f8db92',
-            repImage: 'https://hololive.hololivepro.com/wp-content/uploads/2020/07/Watson-Amelia_list_thumb.png',
-        },
-        {
-            rank: 2,
-            points: 6,
-            name: "AMG Reine's [Reidacted]",
-            color: '#0f53ba',
-            repImage: 'https://hololive.hololivepro.com/wp-content/uploads/2020/07/Pavolia-Reine_list_thumb.png',
-        },
-        {
-            rank: 2,
-            points: 6,
-            name: "Lamy's Land of Lawnmowers",
-            color: '#6abadf',
-            repImage: 'https://hololive.hololivepro.com/wp-content/uploads/2020/06/Yukihana-Lamy_list_thumb.png',
-        },
-        {
-            rank: 5,
-            points: 4,
-            name: "IRyS' Stage Racing",
-            color: '#ff0335',
-            repImage: 'https://hololive.hololivepro.com/wp-content/uploads/2020/07/IRyS_list_thumb.png',
-        },
-        {
-            rank: 6,
-            points: 3,
-            name: "Shiranui Flare's Elfriend F1",
-            color: '#fe3d1c',
-            repImage: 'https://hololive.hololivepro.com/wp-content/uploads/2020/06/Shiranui-Flare_list_thumb.png',
-        },
-        {
-            rank: 7,
-            points: 2,
-            name: "Nerissa's Birdgarage",
-            color: 'darkblue',
-            repImage: 'https://hololive.hololivepro.com/wp-content/uploads/2021/07/Nerissa-Ravencroft_list_thumb.png',
-        },
-        {
-            rank: 8,
-            points: 1,
-            name: "AZKi Pioneer Racing",
-            color: '#fc3488',
-            repImage: 'https://hololive.hololivepro.com/wp-content/uploads/2020/06/AZKi_list_thumb.png',
-        },
-        {
-            rank: 8,
-            points: 1,
-            name: "Mumei's Sancturacing",
-            color: 'brown',
-            repImage: 'https://hololive.hololivepro.com/wp-content/uploads/2020/07/Nanashi-Mumei_list_thumb.png',
-        },
-        {
-            rank: 8,
-            points: 1,
-            name: "Alfa Roneo Racing",
-            color: 'orange',
-            repImage: 'https://hololive.hololivepro.com/wp-content/uploads/2020/06/Momosuzu-Nene_list_thumb.png',
-        },
-        {
-            rank: 11,
-            points: 0,
-            name: "Nun-Nun Speedstar Racing",
-            color: '#266aff',
-            repImage: 'https://hololive.hololivepro.com/wp-content/uploads/2021/05/tokino_sora_thumb.png',
-        },
-        {
-            rank: 11,
-            points: 0,
-            name: "Shiorin Aramco Racing",
-            color: 'grey',
-            repImage: 'https://hololive.hololivepro.com/wp-content/uploads/2021/07/Shiori-Novella_list_thumb.png',
-        },
-    ];
-
-    const annotatedTeams = $derived(
-        teams.map(team => ({
-            ...team,
-            scorers: data.individuals
-                .map(indiv => ({
-                    ...indiv,
-                    points: indiv.points.filter(roundRecord => roundRecord.team === team.name)
-                }))
-                .filter(indiv => indiv.points.length > 0)
-                .map(indiv => ({
-                    name: indiv.name,
-                    cumulativePts: indiv.points.map(
-                        pts => pts.roundScore
-                    ).reduce((a, b) => a + b, 0),
-                }))
-                .sort((a, b) => b.cumulativePts - a.cumulativePts)
-        }))
-    )
 </script>
+
+<svelte:head>
+    <title>Season 3 Standings | Holocord F1 Watchalong Prediction Championship</title>
+</svelte:head>
 
 <h2 class="page-header">Season 3 Standings</h2>
 
 <ul class="team-rankings">
-    {#each annotatedTeams as team (team.name)}
+    {#each data.teams as team (team.name)}
         <li class="team-entry" style="
             border-left-color: hsl(from {team.color} h s 50%);
             background: hsl(from {team.color} h s 80%);
@@ -172,6 +63,9 @@
         text-align: center;
     }
     .team-rankings {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
         margin: 0;
         padding: 0 2rem 8rem;
         list-style-type: none;
@@ -182,8 +76,12 @@
         display: flex;
         align-items: center;
         font-weight: 300;
-        padding: 1rem;
+        padding: 1rem 2rem;
         gap: 2rem;
+        transform: skewX(-15deg);
+    }
+    .team-logo, .team-rank, .team-name, .team-pts {
+        transform: skewX(15deg);
     }
     .team-rank {
         font-weight: 700;
@@ -202,15 +100,16 @@
         font-variant-numeric: tabular-nums;
     }
     .team-breakdown-wrapper {
-        margin: 0;
+        z-index: -10;
+        margin: 1px 0 4rem;
         display: flex;
         justify-content: center;
     }
     .team-breakdown-inner {
-        max-width: 480px;
+        width: 90%;
         padding: 0;
         list-style: none;
-        font-size: 1.5rem;
+        font-size: 2rem;
     }
     .scorer-entry {
         border-left: .5rem solid transparent;
@@ -218,6 +117,9 @@
         align-items: center;
         font-weight: 300;
         gap: 2rem;
+    }
+    .scorer-entry:first-child {
+        padding-top: 4px;
     }
     .scorer-entry + .scorer-entry {
         border-top: 1px solid transparent;
@@ -230,11 +132,11 @@
         padding: 0 2rem;
         font-variant-numeric: tabular-nums;
     }
-    .team-breakdown-wrapper + .team-entry {
-        margin-top: 1rem;
-    }
     
     @media (max-width: 640px) {
+        .team-entry, .team-logo, .team-rank, .team-name, .team-pts {
+            transform: none;
+        }
         .page-header {
             font-size: 1.75rem;
         }
@@ -255,6 +157,7 @@
         }
         .scorer-entry {
             width: 100%;
+            border-left-width: .25rem;
         }
     }
 </style>

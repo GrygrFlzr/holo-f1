@@ -43,7 +43,7 @@ export const load: PageLoad = async ({ fetch }) => {
         },
         {
             name: "Nerissa's Birdgarage",
-            color: 'darkblue',
+            color: 'hsl(235.3, 96.4%, 55.9%)',
             repImage: 'https://hololive.hololivepro.com/wp-content/uploads/2021/07/Nerissa-Ravencroft_list_thumb.png',
         },
         {
@@ -53,12 +53,12 @@ export const load: PageLoad = async ({ fetch }) => {
         },
         {
             name: "Mumei's Sancturacing",
-            color: 'brown',
+            color: 'hsl(25.7, 37.5%, 78%)',
             repImage: 'https://hololive.hololivepro.com/wp-content/uploads/2020/07/Nanashi-Mumei_list_thumb.png',
         },
         {
             name: "Alfa Roneo Racing",
-            color: 'orange',
+            color: 'hsl(33, 100%, 68.2%)',
             repImage: 'https://hololive.hololivepro.com/wp-content/uploads/2020/06/Momosuzu-Nene_list_thumb.png',
         },
         {
@@ -68,7 +68,7 @@ export const load: PageLoad = async ({ fetch }) => {
         },
         {
             name: "Shiorin Aramco Racing",
-            color: 'grey',
+            color: 'hsl(255.7, 21.9%, 58.8%)',
             repImage: 'https://hololive.hololivepro.com/wp-content/uploads/2021/07/Shiori-Novella_list_thumb.png',
         },
     ];

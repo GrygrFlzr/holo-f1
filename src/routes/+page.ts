@@ -27,6 +27,11 @@ export const load: PageLoad = async ({ fetch }) => {
             repImage: 'https://hololive.hololivepro.com/wp-content/uploads/2020/07/Pavolia-Reine_list_thumb.png',
         },
         {
+            name: "GULF Popoyo Racing",
+            color: 'hsl(353, 83.3%, 57.8%)',
+            repImage: 'https://hololive.hololivepro.com/wp-content/uploads/2020/06/Nakiri-Ayame_list_thumb.png',
+        },
+        {
             name: "Lamy's Land of Lawnmowers",
             color: '#6abadf',
             repImage: 'https://hololive.hololivepro.com/wp-content/uploads/2020/06/Yukihana-Lamy_list_thumb.png',
@@ -117,7 +122,12 @@ export const load: PageLoad = async ({ fetch }) => {
             points: team.scorers
                 .map(member => member.cumulativePts)
                 .reduce((a, b) => a + b, 0),
-        })).sort((a, b) => b.points - a.points);
+        })).sort((a, b) => {
+            if (b.points === a.points) {
+                return b.scorers.length - a.scorers.length;
+            }
+            return b.points - a.points;
+        });
 
     const sortedPts = annotatedTeams.map(team => team.points);
 

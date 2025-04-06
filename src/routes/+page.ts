@@ -1,4 +1,5 @@
 import type { PageLoad } from './$types';
+import pekomama from '$lib/assets/pekomama.jpg?no-inline';
 
 const indivPtsUrl = `https://docs.google.com/spreadsheets/d/e/2PACX-1vSGfxGO-A1LkFFlKSQ8JQRKIux7QJqDev2n5CP07d9MVAAAtUp9M2hvzL_jM260dHbVERd9Ku6SoDam/pub?gid=641322508&single=true&output=tsv`;
 export const load: PageLoad = async ({ fetch }) => {
@@ -76,6 +77,21 @@ export const load: PageLoad = async ({ fetch }) => {
             color: 'hsl(255.7, 21.9%, 58.8%)',
             repImage: 'https://hololive.hololivepro.com/wp-content/uploads/2021/07/Shiori-Novella_list_thumb.png',
         },
+        {
+            name: "Melfriend Formula 1 Team",
+            color: 'hsl(43.6, 85.2%, 65.5%)',
+            repImage: 'https://hololive.hololivepro.com/wp-content/uploads/2020/07/Anya-Melfissa_list_thumb.png',
+        },
+        {
+            name: "HoloMoms Racing Supremacy",
+            color: 'hsl(202.7, 100%, 76.7%)',
+            repImage: pekomama,
+        },
+        {
+            name: "Rindo Chihaya's Garage",
+            color: 'hsl(180, 54.4%, 47.3%)',
+            repImage: 'https://hololive.hololivepro.com/wp-content/uploads/2023/09/Rindo-Chihaya_list_thumb.png',
+        },
     ];
 
     const individuals = sheetData.split('\n').map(
@@ -93,6 +109,11 @@ export const load: PageLoad = async ({ fetch }) => {
                         round: 2,
                         team: fields[12 + 1],
                         roundScore: Number.parseInt(fields[12 + 2]) || 0,
+                    },
+                    {
+                        round: 3,
+                        team: fields[24 + 1],
+                        roundScore: Number.parseInt(fields[24 + 2]) || 0,
                     }
                 ]
             }

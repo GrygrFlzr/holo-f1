@@ -5,7 +5,7 @@
 </script>
 
 <svelte:head>
-    <link href="/apple-touch-icon.png" rel="apple-touch-icon" sizes="256x256">
+    <link href="/favicon.png" rel="apple-touch-icon" sizes="256x256">
     <meta property="theme-color" content="#e00700" />
     <meta property="og:site_name" content="Holocord F1 Watchalong Prediction Championship" />
     <link rel="preconnect" href="https://fonts.googleapis.com">

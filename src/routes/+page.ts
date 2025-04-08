@@ -28,7 +28,7 @@ export const load: PageLoad = async ({ fetch }) => {
             repImage: 'https://hololive.hololivepro.com/wp-content/uploads/2020/07/Pavolia-Reine_list_thumb.png',
         },
         {
-            name: "GULF Popoyo Racing",
+            name: "GULF Poyoyo Racing",
             color: 'hsl(353, 83.3%, 57.8%)',
             repImage: 'https://hololive.hololivepro.com/wp-content/uploads/2020/06/Nakiri-Ayame_list_thumb.png',
         },

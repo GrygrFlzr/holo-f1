@@ -1,11 +1,11 @@
 <script lang="ts">
-    import ogImage from "$lib/suzuka.png?no-inline";
+    import ogImage from "$lib/bahrain.png?no-inline";
 </script>
 
 <svelte:head>
-    <meta property="og:title" content="Season 3 Race 3 Prediction Form" />
-    <title>Season 3 Race 3 Prediction Form | Holocord F1 Watchalong Prediction Championship</title>
-    <meta property="og:description" content="Submit predictions for Suzuka, Japan" />
+    <meta property="og:title" content="Season 3 Race 4 Prediction Form" />
+    <title>Season 3 Race 4 Prediction Form | Holocord F1 Watchalong Prediction Championship</title>
+    <meta property="og:description" content="Submit predictions for Bahrain" />
     <meta property="og:image" content={ogImage} />
     <meta property="og:image:width" content="240" />
     <meta property="og:image:height" content="180" />
@@ -16,10 +16,10 @@
     <a class="interactive-button" href="/">
         <span>Return to S3 Standings</span>
     </a>
-    <h2>Race 3: Suzuka, Japan</h2>
+    <h2>Race 4: Bahrain</h2>
     <iframe
-        title="Season 3 Race 3 Submission"
-        src="https://docs.google.com/forms/d/e/1FAIpQLSfWEiA8bHgdAdyP9iUZBgZm1z4BRvy9iPEJU8NKZDXjSYPlPw/viewform?embedded=true"
+        title="Season 3 Race 4 Submission"
+        src="https://docs.google.com/forms/d/e/1FAIpQLSeGhpcDXvzn0kJw6Ab1A7FGauifuaw7fJ3jetY3Krtt2QNanA/viewform?embedded=true"
         frameborder="0"
         marginheight="0"
         marginwidth="0">

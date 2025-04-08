@@ -20,7 +20,7 @@
 </svelte:head>
 
 <a class="interactive-button" href="/season-3/submit">
-    <span>Predict the next Race: Suzuka, Japan</span>
+    <span>Predict the next Race: Bahrain</span>
 </a>
 
 <h2 class="page-header">Season 3 Standings</h2>

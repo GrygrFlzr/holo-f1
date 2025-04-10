@@ -13,9 +13,6 @@
 </svelte:head>
 
 <div class="container">
-    <a class="interactive-button" href="/">
-        <span>Return to S3 Standings</span>
-    </a>
     <h2>Race 4: Bahrain</h2>
     <iframe
         title="Season 3 Race 4 Submission"
@@ -29,30 +26,6 @@
 </div>
 
 <style>
-    .interactive-button {
-        text-align: center;
-        max-width: 30ch;
-        display: flex;
-        justify-content: center;
-        font-size: 2rem;
-        text-decoration: none;
-        border-radius: 2rem;
-        background-color: var(--f1-red);
-        margin: 2rem auto;
-        padding: .5rem 2rem;
-        color: var(--f1-white);
-        box-shadow: 0 4px 6px -1px hsl(from var(--f1-red) h s 30%),
-                    0 2px 4px -2px hsl(from var(--f1-red) h s 30%);
-    }
-    .interactive-button span {
-        display: block;
-        font-style: oblique 10deg;
-    }
-    .interactive-button:hover {
-        background-color: hsl(from var(--f1-red) h s 50%);
-        box-shadow: 0 4px 6px -1px hsl(from var(--f1-red) h s 30%),
-                    0 2px 4px -2px hsl(from var(--f1-red) h s 30%);
-    }
     .container {
         display: flex;
         flex-direction: column;

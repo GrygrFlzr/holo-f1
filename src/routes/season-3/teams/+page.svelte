@@ -10,20 +10,16 @@
 </script>
 
 <svelte:head>
-    <meta property="og:title" content="Season 3 Standings" />
+    <meta property="og:title" content="Season 3 Team Standings" />
     <meta property="og:description" content={description} />
     <meta property="og:image" content={pngLogo} />
     <meta property="og:image:width" content="1193" />
     <meta property="og:image:height" content="188" />
     <meta property="twitter:card" content="summary_large_image" />
-    <title>Season 3 Standings | Holocord F1 Watchalong Prediction Championship</title>
+    <title>Season 3 Team Standings | Holocord F1 Watchalong Prediction Championship</title>
 </svelte:head>
 
-<a class="interactive-button" href="/season-3/submit">
-    <span>Predict the next Race: Bahrain</span>
-</a>
-
-<h2 class="page-header">Season 3 Standings</h2>
+<h2 class="page-header">Season 3 Team Standings</h2>
 
 <ul class="team-rankings">
     {#each data.teams as team (team.name)}
@@ -72,30 +68,6 @@
 </ul>
 
 <style>
-    .interactive-button {
-        text-align: center;
-        max-width: 30ch;
-        display: flex;
-        justify-content: center;
-        font-size: 2rem;
-        text-decoration: none;
-        border-radius: 2rem;
-        background-color: var(--f1-red);
-        margin: 2rem auto;
-        padding: .5rem 2rem;
-        color: var(--f1-white);
-        box-shadow: 0 4px 6px -1px hsl(from var(--f1-red) h s 30%),
-                    0 2px 4px -2px hsl(from var(--f1-red) h s 30%);
-    }
-    .interactive-button span {
-        display: block;
-        font-style: oblique 10deg;
-    }
-    .interactive-button:hover {
-        background-color: hsl(from var(--f1-red) h s 50%);
-        box-shadow: 0 4px 6px -1px hsl(from var(--f1-red) h s 30%),
-                    0 2px 4px -2px hsl(from var(--f1-red) h s 30%);
-    }
     .page-header {
         font-weight: 300;
         font-size: 3rem;

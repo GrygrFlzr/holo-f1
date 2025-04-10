@@ -17,6 +17,11 @@
     <header class="header-container">
         <img class="header-logo" src={headerLogo} alt="holocord Formula 1 logo" />
     </header>
+    <nav class="nav-list">
+        <a class="nav-item" href="/season-3/teams">Team Standings</a>
+        <a class="nav-item" href="/season-3/individuals">Individual Standings</a>
+        <a class="nav-item" href="/season-3/submit">Prediction Form</a>
+    </nav>
     
     <div class="main-content">
         {@render children()}
@@ -46,6 +51,32 @@
         height: 6rem;
         padding: 2rem;
     }
+    .nav-list {
+        width: 100vw;
+        max-width: 840px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: .5rem;
+    }
+    .nav-item {
+        display: block;
+        background-color: hsl(from var(--f1-black) h s 10%);
+        color: hsl(from var(--f1-black) h s 90%);
+        text-decoration: none;
+        text-align: center;
+        font-size: 1.5rem;
+        border-radius: 0 0 .25rem .25rem;
+        padding: .5rem;
+        font-weight: 400;
+        box-shadow:
+            0 4px 6px -1px hsl(from black h s 30%),
+            0 2px 4px -2px hsl(from black h s 30%);
+        border-bottom: 4px solid transparent;
+    }
+    .nav-item:hover {
+        background-color: hsl(from var(--f1-red) h s 20%);
+    }
     .main-content {
         flex-grow: 1;
         margin: 0 auto;
@@ -57,6 +88,15 @@
         .header-logo {
             height: 3rem;
             padding: .5rem;
+        }
+        .nav-list {
+            width: 90vw;
+            grid-template-columns: 1fr;
+            gap: 8px;
+            padding: 8px 0;
+        }
+        .nav-item {
+            border-radius: .5rem;
         }
     }
 

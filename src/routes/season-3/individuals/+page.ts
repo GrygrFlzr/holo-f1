@@ -116,10 +116,7 @@ export const load: PageLoad = async ({ parent }) => {
                 ].filter(ptsRecord => ptsRecord.team !== "-")
             }
         }
-    );
-    individuals.shift();
-    individuals.shift();
-    individuals.shift();
+    ).slice(3).filter(indiv => indiv.name !== '');
 
     const annotatedIndividuals = individuals.map(person => ({
         ...person,

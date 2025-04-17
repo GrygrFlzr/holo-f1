@@ -130,7 +130,7 @@ import type { PageProps } from './$types';
 {:else if weightFactor === 1}
     <span class="warning">A weight factor of 1 practically counts all results without weighting.</span>
 {/if}
-<p>Per Grand Prix, 1st score is worth 100%, 2nd is worth {weightFactor * 100}%, 3rd is worth {Math.floor(weightFactor * weightFactor * 100 * 100)/ 100}%, ...</p>
+<p>Per Grand Prix, 1st score is worth 100%, 2nd is worth {Math.floor(weightFactor * 100 * 100) / 100}%, 3rd is worth {Math.floor(weightFactor * weightFactor * 100 * 100)/ 100}%, ...</p>
 <div class="team-list">
     {#each grygrProposal.slice(0, 4) as team (team.name)}
         <div class="team-entry" style="

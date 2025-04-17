@@ -1,5 +1,6 @@
 <script lang="ts">
-	import type { PageProps } from './$types';
+	import { slide } from 'svelte/transition';
+import type { PageProps } from './$types';
     let { data }: PageProps = $props();
 
     let ayaviProposal = data.teams.map(team => {
@@ -43,7 +44,10 @@
             totalScore: grandsPrix.map(gp => gp.score).reduce((a, b) => a + b, 0),
         };
     }).sort((a, b) => b.totalScore - a.totalScore);
-    let grygrProposal = data.teams.map(team => {
+
+    let weightFactor = $state(0.95);
+
+    const grygrProposal = $derived(data.teams.map(team => {
         let grandsPrix = data.grandsPrix.slice(0,4).map((gpName, gpIndex) => {
             const gpNum = gpIndex + 1;
             const records = data.scores.filter(
@@ -54,7 +58,7 @@
                 round: gpNum,
                 name: gpName,
                 records: records,
-                score: records.map(rec => rec.score).reduce((total, curr, index) => total + (curr * Math.pow(0.1, index)), 0),
+                score: records.map(rec => rec.score).reduce((total, curr, index) => total + (curr * Math.pow(weightFactor, index)), 0),
             };
         });
         return {
@@ -62,7 +66,7 @@
             grandsPrix,
             totalScore: grandsPrix.map(gp => gp.score).reduce((a, b) => a + b, 0),
         };
-    }).sort((a, b) => b.totalScore - a.totalScore);
+    }).sort((a, b) => b.totalScore - a.totalScore));
 </script>
 
 <svelte:head>
@@ -117,7 +121,16 @@
 </div>
 
 <h2>Grygr's Proposal: Diminishing Returns</h2>
-<p>Per Grand Prix, 1st score is worth 100%, 2nd is worth 10%, 3rd is worth 1%, ...</p>
+<label>
+    Weighting Factor:
+    <input type="number" min="0" max="1" step="0.05" bind:value={weightFactor}>
+</label>
+{#if weightFactor === 0}
+    <span class="warning">A weight factor of 0 practically only counts the top result.</span>
+{:else if weightFactor === 1}
+    <span class="warning">A weight factor of 1 practically counts all results without weighting.</span>
+{/if}
+<p>Per Grand Prix, 1st score is worth 100%, 2nd is worth {weightFactor * 100}%, 3rd is worth {Math.floor(weightFactor * weightFactor * 100 * 100)/ 100}%, ...</p>
 <div class="team-list">
     {#each grygrProposal.slice(0, 4) as team (team.name)}
         <div class="team-entry" style="
@@ -129,8 +142,8 @@
                     <h4 class="gp-name">{gp.name} ({Math.floor(gp.score * 100) / 100})</h4>
                     <ol>
                         {#each gp.records as record, recordIndex (record.name)}
-                            <li>{record.name} ({record.score} &times; 0.1<sup>{recordIndex}</sup> &equals; {Math.floor(
-                                record.score * Math.pow(0.1, recordIndex) * Math.pow(10, 8)
+                            <li>{record.name} ({record.score} &times; {weightFactor}<sup>{recordIndex}</sup> &equals; {Math.floor(
+                                record.score * Math.pow(weightFactor, recordIndex) * Math.pow(10, 8)
                             ) / Math.pow(10, 8)})</li>
                         {/each}
                     </ol>
@@ -151,5 +164,8 @@
     }
     ol {
         padding-left: 1rem;
+    }
+    .warning {
+        color: red;
     }
 </style>

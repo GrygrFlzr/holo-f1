@@ -1,7 +1,7 @@
 <script lang="ts">
-    import ogImage from "$lib/jeddah.png?no-inline";
-    const raceCount = 5;
-    const raceName = "Jeddah, Saudi Arabia";
+    import ogImage from "$lib/miami.png?no-inline";
+    const raceCount = 6;
+    const raceName = "Miami, USA";
 </script>
 
 <svelte:head>
@@ -18,7 +18,7 @@
     <h2>Race {raceCount}: {raceName}</h2>
     <iframe
         title="Season 3 Race {raceCount} Submission"
-        src="https://docs.google.com/forms/d/e/1FAIpQLScYlsvOcmlieqpWNXbakK82ktBPGkqThQGco1dkOjZ_f4CZIQ/viewform?embedded=true"
+        src="https://docs.google.com/forms/d/e/1FAIpQLScus8LLh3Ca-5rvn8E4eWBvpvNUBlHmu3TR6PEmkdeNk4XvvQ/viewform?embedded=true"
         frameborder="0"
         marginheight="0"
         marginwidth="0">

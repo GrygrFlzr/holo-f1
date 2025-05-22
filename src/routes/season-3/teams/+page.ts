@@ -127,6 +127,11 @@ export const load: PageLoad = async ({ parent }) => {
                         round: 6,
                         team: fields[60 + 1],
                         roundScore: Number.parseInt(fields[60 + 2]) || 0,
+                    },
+                    {
+                        round: 7,
+                        team: fields[72 + 1],
+                        roundScore: Number.parseInt(fields[72 + 2]) || 0,
                     }
                 ]
             }

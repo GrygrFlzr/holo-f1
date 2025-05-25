@@ -117,6 +117,11 @@ export const load: PageLoad = async ({ parent }) => {
             color: 'hsl(180, 54.4%, 47.3%)',
             repImage: 'https://hololive.hololivepro.com/wp-content/uploads/2023/09/Rindo-Chihaya_list_thumb.png',
         },
+        {
+            name: "Operation V7",
+            color: 'hsl(246, 7.7%, 74.5%)',
+            repImage: 'https://hololive.hololivepro.com/wp-content/uploads/2020/07/Vestia-Zeta_list_thumb.png',
+        },
     ];
 
     const scores = sheetData
@@ -166,6 +171,11 @@ export const load: PageLoad = async ({ parent }) => {
                         round: 7,
                         team: fields[72 + 1],
                         roundScore: Number.parseInt(fields[72 + 2]) || 0,
+                    },
+                    {
+                        round: 8,
+                        team: fields[84 + 1],
+                        roundScore: Number.parseInt(fields[84 + 2]) || 0,
                     }
                 ]
             }

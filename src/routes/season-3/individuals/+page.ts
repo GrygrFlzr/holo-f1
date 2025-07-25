@@ -102,48 +102,11 @@ export const load: PageLoad = async ({ parent }) => {
             const fields = row.split('\t');
             return {
                 name: fields[0],
-                points: [
-                    {
-                        round: 1,
-                        team: fields[1],
-                        roundScore: Number.parseInt(fields[2]) || 0,
-                    },
-                    {
-                        round: 2,
-                        team: fields[12 + 1],
-                        roundScore: Number.parseInt(fields[12 + 2]) || 0,
-                    },
-                    {
-                        round: 3,
-                        team: fields[24 + 1],
-                        roundScore: Number.parseInt(fields[24 + 2]) || 0,
-                    },
-                    {
-                        round: 4,
-                        team: fields[36 + 1],
-                        roundScore: Number.parseInt(fields[36 + 2]) || 0,
-                    },
-                    {
-                        round: 5,
-                        team: fields[48 + 1],
-                        roundScore: Number.parseInt(fields[48 + 2]) || 0,
-                    },
-                    {
-                        round: 6,
-                        team: fields[60 + 1],
-                        roundScore: Number.parseInt(fields[60 + 2]) || 0,
-                    },
-                    {
-                        round: 7,
-                        team: fields[72 + 1],
-                        roundScore: Number.parseInt(fields[72 + 2]) || 0,
-                    },
-                    {
-                        round: 8,
-                        team: fields[84 + 1],
-                        roundScore: Number.parseInt(fields[84 + 2]) || 0,
-                    }
-                ].filter(ptsRecord => ptsRecord.team !== "-")
+                points: Array.from({ length: 12 }, (_, i) => ({
+                    round: i + 1,
+                    team: fields[i * 12 + 1],
+                    roundScore: Number.parseInt(fields[i * 12 + 2]) || 0,
+                })).filter(ptsRecord => ptsRecord.team !== "-")
             }
         }
     ).slice(3).filter(indiv => indiv.name !== '');

@@ -131,7 +131,7 @@ export const load: PageLoad = async ({ parent }) => {
             row => {
                 const fields = row.split('\t');
                 const name = fields[0];
-                return Array.from({ length: 13 }, (_, i) => ({
+                return Array.from({ length: 14 }, (_, i) => ({
                     name: name,
                     round: i + 1,
                     team: fields[i * 12 + 1],

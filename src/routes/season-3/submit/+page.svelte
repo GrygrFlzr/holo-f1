@@ -1,7 +1,7 @@
 <script lang="ts">
-    import ogImage from "$lib/hungaroring.png?no-inline";
-    const raceCount = 14;
-    const raceName = "Hungary";
+    import ogImage from "$lib/dutch.png?no-inline";
+    const raceCount = 15;
+    const raceName = "Dutch";
 </script>
 
 <svelte:head>
@@ -18,7 +18,7 @@
     <h2>Race {raceCount}: {raceName}</h2>
     <iframe
         title="Season 3 Race {raceCount} Submission"
-        src="https://docs.google.com/forms/d/e/1FAIpQLScZ1rHP4sbvHlCmhZ2RLpXYWNcjiHPF8GzishNzIMsh8a_6eg/viewform?embedded=true"
+        src="https://docs.google.com/forms/d/e/1FAIpQLSeisFjtxgAwwlxLYXKLd7upo9FPdKBGV3_CmwK7S55d5e9z3w/viewform?embedded=true"
         frameborder="0"
         marginheight="0"
         marginwidth="0">

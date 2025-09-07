@@ -2,7 +2,7 @@
 	--f1-red: hsl(2, 100%, 44%);
 	--f1-white: hsl(220, 13%, 91%);
 	--f1-lightgrey: hsl(220, 13%, 80%);
-    --f1-black: hsl(0, 0%, 0%);
+	--f1-black: hsl(0, 0%, 0%);
 
 	font-family: 'Oswald', sans-serif;
 	font-optical-sizing: auto;

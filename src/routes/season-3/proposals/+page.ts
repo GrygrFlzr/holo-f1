@@ -1,6 +1,7 @@
 import type { PageLoad } from './$types';
 import pekomama from '$lib/assets/pekomama.jpg?no-inline';
 
+export const prerender = true;
 export const load: PageLoad = async ({ parent }) => {
 	const sheetData = (await parent()).sheetData;
 

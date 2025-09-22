@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { PageProps } from './$types';
-	import pngLogo from '$lib/logo.png?no-inline';
+	import pngLogo from '$lib/assets/logo.png?no-inline';
 	let { data }: PageProps = $props();
 	const rankEmojis = ['🥇', '🥈', '🥉'];
 	const description = data.teams

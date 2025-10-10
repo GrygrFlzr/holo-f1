@@ -12,7 +12,7 @@ const indivPtsUrl = `https://docs.google.com/spreadsheets/d/e/2PACX-1vSGfxGO-A1L
 export const load: LayoutLoad = async ({ fetch }) => {
 	const response = await fetch(indivPtsUrl);
 	const sheetData = await response.text();
-	const racesCompleted = 17;
+	const racesCompleted = 18;
 	const teams: Team[] = [
 		{
 			name: 'Scuderia KFP',

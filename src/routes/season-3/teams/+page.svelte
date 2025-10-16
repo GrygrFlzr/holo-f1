@@ -22,9 +22,14 @@
 <h2 class="page-header">Season 3 Team Standings</h2>
 
 <ul class="team-rankings">
-	{#each data.teams as team (team.name)}
+	{#each data.teams as team, index (team.name)}
 		<li class="team-entry" style="--team-color: {team.color}">
-			<img class="team-logo" src={team.repImage} alt="{team.name} rep logo" />
+			<img
+				class="team-logo"
+				src={team.repImage}
+				alt="{team.name} rep logo"
+				loading={index === 0 ? 'eager' : 'lazy'}
+			/>
 			<span class="team-rank">#{team.rank}</span>
 			<span class="team-name">{team.name}</span>
 			<span class="team-pts">{team.points}</span>
@@ -92,7 +97,9 @@
 		text-align: center;
 	}
 	.team-logo {
-		max-height: 6rem;
+		width: 6rem;
+		height: 6rem;
+		aspect-ratio: 1;
 		border-radius: 50%;
 	}
 	.team-name {
@@ -171,7 +178,8 @@
 			gap: 0.5rem;
 		}
 		.team-logo {
-			max-height: 3rem;
+			width: 3rem;
+			height: 3rem;
 			border-radius: 0;
 		}
 		.scorer-entry {

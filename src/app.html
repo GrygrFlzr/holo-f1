@@ -9,11 +9,26 @@
 		<link href="%sveltekit.assets%/favicon.png" rel="apple-touch-icon" sizes="256x256" />
 		<style>
 			@font-face {
-				font-family: 'Oswald';
-				font-style: normal;
+				font-family: 'Oswald Variable';
+				src: url('%sveltekit.assets%/oswald-variable.ttf') format('truetype-variations');
 				font-weight: 200 700;
-				font-display: swap;
-				src: url('%sveltekit.assets%/oswald-variable.ttf') format('truetype');
+
+				ascent-override: 119.3%;
+				descent-override: 28.9%;
+				line-gap-override: 0%;
+			}
+			@font-face {
+				font-family: 'Oswald Fallback';
+				src: local('Arial Narrow');
+				font-weight: 200 700;
+
+				ascent-override: 119.3%;
+				descent-override: 28.9%;
+				line-gap-override: 0%;
+				size-adjust: 100%;
+			}
+			:root {
+				font-family: 'Oswald Variable', 'Oswald Fallback', sans-serif;
 			}
 		</style>
 		%sveltekit.head%

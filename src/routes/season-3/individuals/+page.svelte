@@ -59,15 +59,7 @@
 				{#each individual.points as pointRecord (pointRecord.round)}
 					<div
 						class="point-record-entry"
-						style="
-                        background: linear-gradient(
-                            to right,
-                            hsl(from {teamsByName[pointRecord.team].color} h s 75%),
-                            hsl(from {teamsByName[pointRecord.team].color} h s 85%)
-                        );
-                        border-color: hsl(from {teamsByName[pointRecord.team].color} h s 30%);
-                        color: hsl(from {teamsByName[pointRecord.team].color} h s 15%);
-                    "
+						style="--team-color: {teamsByName[pointRecord.team].color}"
 					>
 						<div class="point-record-location">{grandsPrix[pointRecord.round - 1]}</div>
 						<div class="point-record-team">{pointRecord.team}</div>
@@ -142,6 +134,14 @@
 		border-width: 1px;
 		border-style: solid;
 		border-top-width: 0;
+
+		background: linear-gradient(
+			to right,
+			hsl(from var(--team-color) h s 75%),
+			hsl(from var(--team-color) h s 85%)
+		);
+		border-color: hsl(from var(--team-color) h s 30%);
+		color: hsl(from var(--team-color) h s 15%);
 	}
 	.point-record-location,
 	.point-record-team,

@@ -23,22 +23,7 @@
 
 <ul class="team-rankings">
 	{#each data.teams as team (team.name)}
-		<li
-			class="team-entry"
-			style="
-            border-left-color: hsl(from {team.color} h s 50%);
-            background: hsl(from {team.color} h s 80%);
-            background: linear-gradient(
-                to right,
-                hsl(from {team.color} h s 75%),
-                hsl(from {team.color} h s 85%)
-            );
-            color: hsl(from {team.color} h s 25%);
-            box-shadow:
-                0 4px 6px -1px hsl(from {team.color} h s 30%),
-                0 2px 4px -2px hsl(from {team.color} h s 30%);
-        "
-		>
+		<li class="team-entry" style="--team-color: {team.color}">
 			<img class="team-logo" src={team.repImage} alt="{team.name} rep logo" />
 			<span class="team-rank">#{team.rank}</span>
 			<span class="team-name">{team.name}</span>
@@ -47,23 +32,7 @@
 		<li class="team-breakdown-wrapper">
 			<ul class="team-breakdown-inner">
 				{#each team.scorers as scorer (scorer.name)}
-					<li
-						class="scorer-entry"
-						style="
-                        border-top-color: hsl(from {team.color} h s 90%);
-                        border-left-color: hsl(from {team.color} h s 50%);
-                        background: hsl(from {team.color} h s 75%);
-                        background: linear-gradient(
-                            to right,
-                            hsl(from {team.color} h s 70%),
-                            hsl(from {team.color} h s 80%)
-                        );
-                        color: hsl(from {team.color} h s 25%);
-                        box-shadow:
-                            0 4px 6px -1px hsl(from {team.color} h s 30%),
-                            0 2px 4px -2px hsl(from {team.color} h s 30%);
-                    "
-					>
+					<li class="scorer-entry" style="--team-color: {team.color}">
 						<span class="scorer-name">{scorer.name}</span>
 						<span class="scorer-pts">{scorer.cumulativePts} pts</span>
 					</li>
@@ -97,6 +66,18 @@
 		padding: 1rem 2rem;
 		gap: 2rem;
 		transform: skewX(-15deg);
+
+		border-left-color: hsl(from var(--team-color) h s 50%);
+		background: hsl(from var(--team-color) h s 80%);
+		background: linear-gradient(
+			to right,
+			hsl(from var(--team-color) h s 75%),
+			hsl(from var(--team-color) h s 85%)
+		);
+		color: hsl(from var(--team-color) h s 25%);
+		box-shadow:
+			0 4px 6px -1px hsl(from var(--team-color) h s 30%),
+			0 2px 4px -2px hsl(from var(--team-color) h s 30%);
 	}
 	.team-logo,
 	.team-rank,
@@ -138,6 +119,19 @@
 		align-items: center;
 		font-weight: 300;
 		gap: 2rem;
+
+		border-top-color: hsl(from var(--team-color) h s 90%);
+		border-left-color: hsl(from var(--team-color) h s 50%);
+		background: hsl(from var(--team-color) h s 75%);
+		background: linear-gradient(
+			to right,
+			hsl(from var(--team-color) h s 70%),
+			hsl(from var(--team-color) h s 80%)
+		);
+		color: hsl(from var(--team-color) h s 25%);
+		box-shadow:
+			0 4px 6px -1px hsl(from var(--team-color) h s 30%),
+			0 2px 4px -2px hsl(from var(--team-color) h s 30%);
 	}
 	.scorer-entry:first-child {
 		padding-top: 4px;

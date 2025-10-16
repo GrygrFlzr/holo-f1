@@ -1,7 +1,41 @@
 <script lang="ts">
+	import { SvelteDate } from 'svelte/reactivity';
 	import ogImage from '$lib/assets/cota-texas.png?no-inline';
+
+	/* Race constants */
 	const raceCount = 19;
 	const raceName = 'Austin, Texas, US';
+	const startTime = new Date('2025-10-17T21:30:00.000Z');
+	const raceFormId = '1FAIpQLSeeud0xdBSaFQfNjoWpA1GC8cdT4VHf5TeRgTIJUPpQIihoWw';
+
+	const raceFormUrl = `https://docs.google.com/forms/d/e/${raceFormId}/viewform?embedded=true`;
+	const currentTime = new SvelteDate();
+	const durationMs = $derived(startTime.getTime() - currentTime.getTime());
+
+	const daysRemaining = $derived(Math.floor(durationMs / 1000 / 60 / 60 / 24));
+	const hoursRemaining = $derived(Math.floor(durationMs / 1000 / 60 / 60));
+	const minutesRemaining = $derived(Math.floor(durationMs / 1000 / 60));
+	const isFormAvailable = $derived(durationMs > 0);
+
+	const formattedDuration: string = $derived.by(() => {
+		if (daysRemaining > 1) {
+			return `${daysRemaining} days`;
+		} else if (hoursRemaining > 1) {
+			return `${hoursRemaining} hours`;
+		} else if (minutesRemaining > 1) {
+			return `${minutesRemaining} minutes`;
+		}
+		return `a minute`;
+	});
+
+	$effect(() => {
+		const interval = setInterval(() => {
+			currentTime.setTime(Date.now());
+		}, 1000);
+		return () => {
+			clearInterval(interval);
+		};
+	});
 </script>
 
 <svelte:head>
@@ -18,15 +52,22 @@
 
 <div class="container">
 	<h2>Race {raceCount}: {raceName}</h2>
-	<iframe
-		title="Season 3 Race {raceCount} Submission"
-		src="https://docs.google.com/forms/d/e/1FAIpQLSeeud0xdBSaFQfNjoWpA1GC8cdT4VHf5TeRgTIJUPpQIihoWw/viewform?embedded=true"
-		frameborder="0"
-		marginheight="0"
-		marginwidth="0"
-	>
-		Loading…
-	</iframe>
+	{#if isFormAvailable}
+		<p>
+			The deadline for submissions is in {formattedDuration}.
+		</p>
+		<iframe
+			title="Season 3 Race {raceCount} Submission"
+			src={raceFormUrl}
+			frameborder="0"
+			marginheight="0"
+			marginwidth="0"
+		>
+			Loading…
+		</iframe>
+	{:else}
+		<p>Form submission is closed as the sprint/race has started.</p>
+	{/if}
 </div>
 
 <style>

@@ -1,12 +1,12 @@
 <script lang="ts">
 	import { SvelteDate } from 'svelte/reactivity';
-	import ogImage from '$lib/assets/cota-texas.png?no-inline';
+	import ogImage from '$lib/assets/mexico.png?no-inline';
 
 	/* Race constants */
-	const raceCount = 19;
-	const raceName = 'Austin, Texas, US';
-	const startTime = new Date('2025-10-17T21:30:00.000Z');
-	const raceFormId = '1FAIpQLSeeud0xdBSaFQfNjoWpA1GC8cdT4VHf5TeRgTIJUPpQIihoWw';
+	const raceCount = 20;
+	const raceName = 'Mexico';
+	const startTime = new Date('2025-10-25T21:00:00.000Z');
+	const raceFormId = '1FAIpQLSe2sTAlhduc392TYkP1MlS6iKLjMY5a6oI5Qu8BXoUrLBIv6w';
 
 	const raceFormUrl = `https://docs.google.com/forms/d/e/${raceFormId}/viewform?embedded=true`;
 	const currentTime = new SvelteDate();

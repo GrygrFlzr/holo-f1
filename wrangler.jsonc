@@ -4,7 +4,7 @@
  */
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "svelte-test",
+	"name": "holo-f1",
 	"main": ".svelte-kit/cloudflare/_worker.js",
 	"compatibility_date": "2025-10-23",
 	"compatibility_flags": ["nodejs_als"],

@@ -1,9 +1,19 @@
 <script lang="ts">
-	import { asset, resolve } from '$app/paths';
+	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
 	import '$lib/colors.css';
 	import headerLogo from '$lib/logo-min.svg?raw';
 	let { children } = $props();
+
+	const canonicalUrl = page.url;
+	canonicalUrl.protocol = 'https:';
+	canonicalUrl.host = 'f1.kfp.yt';
+	canonicalUrl.port = '443';
 </script>
+
+<svelte:head>
+	<link rel="canonical" href={canonicalUrl.href} />
+</svelte:head>
 
 <div class="everything">
 	<header class="header-container">

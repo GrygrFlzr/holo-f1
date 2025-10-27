@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { SvelteDate } from 'svelte/reactivity';
-	import ogImage from '$lib/assets/mexico.png?no-inline';
+	import ogImage from '$lib/assets/brazil.png?no-inline';
 
 	/* Race constants */
 	const raceCount = 21;

@@ -3,10 +3,10 @@
 	import ogImage from '$lib/assets/mexico.png?no-inline';
 
 	/* Race constants */
-	const raceCount = 20;
-	const raceName = 'Mexico';
-	const startTime = new Date('2025-10-25T21:00:00.000Z');
-	const raceFormId = '1FAIpQLSe2sTAlhduc392TYkP1MlS6iKLjMY5a6oI5Qu8BXoUrLBIv6w';
+	const raceCount = 21;
+	const raceName = 'São Paulo';
+	const startTime = new Date('2025-11-08T01:30:00.000Z');
+	const raceFormId = '1FAIpQLSenNl-UVMCCzYD5Oz0TbLDQ5lhSexURheQLu0FLUjrlr7F4Dg';
 
 	const raceFormUrl = `https://docs.google.com/forms/d/e/${raceFormId}/viewform?embedded=true`;
 	const currentTime = new SvelteDate();

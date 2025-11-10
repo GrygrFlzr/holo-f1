@@ -6,11 +6,7 @@ export default defineConfig({
 	server: {
 		allowedHosts: ['localhost', '.cybeast.dev']
 	},
-	worker: {
-		rolldownOptions: {
-			output: {
-				minify: true
-			}
-		}
+	build: {
+		minify: true
 	}
 });

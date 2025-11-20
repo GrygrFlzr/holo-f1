@@ -5,7 +5,7 @@
 	/* Race constants */
 	const raceCount = 22;
 	const raceName = 'Las Vegas';
-	const startTime = new Date('2025-11-21T04:00:00.000Z');
+	const startTime = new Date('2025-11-22T04:00:00.000Z');
 	const raceFormId = '1FAIpQLSeY0QeWFDuJb3448aWzMIQkrEVEn9t-hTVcjkkRj4bNVUzDxw';
 
 	const raceFormUrl = `https://docs.google.com/forms/d/e/${raceFormId}/viewform?embedded=true`;

@@ -1,13 +1,13 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { SvelteDate } from 'svelte/reactivity';
-	import ogImage from '$lib/assets/lasvegas.png?no-inline';
+	import ogImage from '$lib/assets/qatar.png?no-inline';
 
 	/* Race constants */
-	const raceCount = 22;
-	const raceName = 'Las Vegas';
-	const startTime = new Date('2025-11-22T04:00:00.000Z');
-	const raceFormId = '1FAIpQLSeY0QeWFDuJb3448aWzMIQkrEVEn9t-hTVcjkkRj4bNVUzDxw';
-
+	const raceCount = 23;
+	const raceName = 'Qatar';
+	const startTime = new Date('2025-11-28T17:30:00.000Z');
+	const raceFormId = '1FAIpQLSfJV6133kO14vNvTFj4fwkVrLSSvqazX3c00ZxYfD_f5YYzfQ';
 	const raceFormUrl = `https://docs.google.com/forms/d/e/${raceFormId}/viewform?embedded=true`;
 	const currentTime = new SvelteDate();
 	const durationMs = $derived(startTime.getTime() - currentTime.getTime());
@@ -28,7 +28,7 @@
 		return `a minute`;
 	});
 
-	$effect(() => {
+	onMount(() => {
 		const interval = setInterval(() => {
 			currentTime.setTime(Date.now());
 		}, 1000);

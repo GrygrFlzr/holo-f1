@@ -2,9 +2,7 @@ import type { PageLoad } from './$types';
 
 export const prerender = true;
 export const load: PageLoad = async ({ parent }) => {
-	const sheetData = (await parent()).sheetData;
-	const teams = (await parent()).teams;
-	const racesCompleted = (await parent()).racesCompleted;
+	const { sheetData, teams, racesCompleted } = await parent();
 
 	const grandsPrix = [
 		'Australian Grand Prix',

@@ -9,6 +9,7 @@
 	const startTime = new Date('2025-12-06T14:00:00.000Z');
 	const raceFormId = '1FAIpQLSfgFaJc9z-XvuR-OSD0pobjI3rSTELPArKoHvCgcQfh5hu2Rw';
 	const raceFormUrl = `https://docs.google.com/forms/d/e/${raceFormId}/viewform?embedded=true`;
+	const raceFormExternal = `https://docs.google.com/forms/d/e/${raceFormId}/viewform?usp=dialog`;
 	const currentTime = new SvelteDate();
 	const durationMs = $derived(startTime.getTime() - currentTime.getTime());
 
@@ -56,6 +57,7 @@
 		<p>
 			The deadline for submissions is in {formattedDuration}.
 		</p>
+		<!--
 		<iframe
 			sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-forms"
 			title="Season 3 Race {raceCount} Form Submission"
@@ -63,6 +65,9 @@
 		>
 			Loading…
 		</iframe>
+		-->
+		<a href={raceFormExternal} target="_blank" rel="external noopener">Click here to go to form</a>
+		<p><small><code>iFrame</code> embeds keep having login issues so dumb link it is...</small></p>
 	{:else}
 		<p>Form submission is closed as the sprint/race has started.</p>
 	{/if}
@@ -74,10 +79,13 @@
 		flex-direction: column;
 		height: calc(100dvh);
 	}
-	iframe {
+	/* iframe {
 		flex-grow: 1;
 		width: 100%;
 		border: none;
 		margin: 0;
+	} */
+	a {
+		font-size: 4rem;
 	}
 </style>

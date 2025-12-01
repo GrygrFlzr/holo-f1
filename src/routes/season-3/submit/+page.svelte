@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { SvelteDate } from 'svelte/reactivity';
-	import ogImage from '$lib/assets/qatar.png?no-inline';
+	import ogImage from '$lib/assets/abudhabi.png?no-inline';
 
 	/* Race constants */
-	const raceCount = 23;
-	const raceName = 'Qatar';
-	const startTime = new Date('2025-11-28T17:30:00.000Z');
-	const raceFormId = '1FAIpQLSfJV6133kO14vNvTFj4fwkVrLSSvqazX3c00ZxYfD_f5YYzfQ';
+	const raceCount = 24;
+	const raceName = 'Abu Dhabi';
+	const startTime = new Date('2025-12-06T14:00:00.000Z');
+	const raceFormId = '1FAIpQLSfgFaJc9z-XvuR-OSD0pobjI3rSTELPArKoHvCgcQfh5hu2Rw';
 	const raceFormUrl = `https://docs.google.com/forms/d/e/${raceFormId}/viewform?embedded=true`;
 	const currentTime = new SvelteDate();
 	const durationMs = $derived(startTime.getTime() - currentTime.getTime());
@@ -57,11 +57,9 @@
 			The deadline for submissions is in {formattedDuration}.
 		</p>
 		<iframe
-			title="Season 3 Race {raceCount} Submission"
+			sandbox="allow-storage-access-by-user-activation allow-scripts allow-same-origin allow-forms"
+			title="Season 3 Race {raceCount} Form Submission"
 			src={raceFormUrl}
-			frameborder="0"
-			marginheight="0"
-			marginwidth="0"
 		>
 			Loading…
 		</iframe>
@@ -79,5 +77,7 @@
 	iframe {
 		flex-grow: 1;
 		width: 100%;
+		border: none;
+		margin: 0;
 	}
 </style>

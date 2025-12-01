@@ -3,5 +3,5 @@ import { redirect } from '@sveltejs/kit';
 
 export const prerender = true;
 export const GET: RequestHandler = () => {
-	return redirect(307, '/season-3/teams');
+	redirect(307, '/season-3/teams');
 };

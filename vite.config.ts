@@ -7,6 +7,12 @@ export default defineConfig({
 		allowedHosts: ['localhost', '.cybeast.dev']
 	},
 	build: {
-		minify: true
+		sourcemap: false,
+		minify: 'terser',
+		terserOptions: {
+			ecma: 2020,
+			sourceMap: false,
+			module: true
+		}
 	}
 });

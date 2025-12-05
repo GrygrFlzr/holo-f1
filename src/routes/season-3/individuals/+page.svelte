@@ -2,12 +2,21 @@
 	import type { PageProps } from './$types';
 	import pngLogo from '$lib/assets/logo.png?no-inline';
 	let { data }: PageProps = $props();
+	const [individuals, teams] = $derived.by(() => {
+		let _individuals = $state(data.individuals);
+		let _teams = $state(data.teams);
+		return [_individuals, _teams];
+	});
 	const rankEmojis = ['🥇', '🥈', '🥉'];
-	const description = data.individuals
-		.filter((person) => person.rank <= 3)
-		.map((person) => `${rankEmojis[person.rank - 1]} ${person.name} // ${person.cumulativePoints}`)
-		.join('\n');
-	const teamsByName = Object.fromEntries(data.teams.map((team) => [team.name, team]));
+	const description = $derived(
+		individuals
+			.filter((person) => person.rank <= 3)
+			.map(
+				(person) => `${rankEmojis[person.rank - 1]} ${person.name} // ${person.cumulativePoints}`
+			)
+			.join('\n')
+	);
+	const teamsByName = $derived(Object.fromEntries(teams.map((team) => [team.name, team])));
 	const grandsPrix = [
 		'Australian Grand Prix',
 		'Chinese Grand Prix',

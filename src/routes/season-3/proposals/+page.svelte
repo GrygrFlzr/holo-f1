@@ -2,61 +2,72 @@
 	import type { PageProps } from './$types';
 	let { data }: PageProps = $props();
 
-	let ayaviProposal = data.teams
-		.map((team) => {
-			let grandsPrix = data.grandsPrix.slice(0, 4).map((gpName, gpIndex) => {
-				const gpNum = gpIndex + 1;
-				const records = data.scores
-					.filter((record) => record.round === gpNum && record.team === team.name)
-					.sort((a, b) => b.score - a.score)
-					.slice(0, 3);
+	const [scores, grandsPrix, teams] = $derived.by(() => {
+		let _scores = $state(data.scores);
+		let _grandsPrix = $state(data.grandsPrix);
+		let _teams = $state(data.teams);
+		return [_scores, _grandsPrix, _teams];
+	});
+
+	let ayaviProposal = $derived(
+		teams
+			.map((team) => {
+				let relevantGP = grandsPrix.slice(0, 4).map((gpName, gpIndex) => {
+					const gpNum = gpIndex + 1;
+					const records = scores
+						.filter((record) => record.round === gpNum && record.team === team.name)
+						.sort((a, b) => b.score - a.score)
+						.slice(0, 3);
+					return {
+						round: gpNum,
+						name: gpName,
+						records: records,
+						score: records.map((rec) => rec.score).reduce((a, b) => a + b, 0)
+					};
+				});
 				return {
-					round: gpNum,
-					name: gpName,
-					records: records,
-					score: records.map((rec) => rec.score).reduce((a, b) => a + b, 0)
+					name: team.name,
+					grandsPrix: relevantGP,
+					totalScore: relevantGP.map((gp) => gp.score).reduce((a, b) => a + b, 0)
 				};
-			});
-			return {
-				name: team.name,
-				grandsPrix,
-				totalScore: grandsPrix.map((gp) => gp.score).reduce((a, b) => a + b, 0)
-			};
-		})
-		.sort((a, b) => b.totalScore - a.totalScore);
-	let dakkyunProposal = data.teams
-		.map((team) => {
-			let grandsPrix = data.grandsPrix.slice(0, 4).map((gpName, gpIndex) => {
-				const gpNum = gpIndex + 1;
-				const records = data.scores
-					.filter((record) => record.round === gpNum && record.team === team.name)
-					.sort((a, b) => b.score - a.score);
+			})
+			.sort((a, b) => b.totalScore - a.totalScore)
+	);
+	let dakkyunProposal = $derived(
+		teams
+			.map((team) => {
+				let relevantGP = grandsPrix.slice(0, 4).map((gpName, gpIndex) => {
+					const gpNum = gpIndex + 1;
+					const records = scores
+						.filter((record) => record.round === gpNum && record.team === team.name)
+						.sort((a, b) => b.score - a.score);
+					return {
+						round: gpNum,
+						name: gpName,
+						records: records,
+						score:
+							records.length === 0
+								? 0
+								: records.map((rec) => rec.score).reduce((a, b) => a + b, 0) / records.length
+					};
+				});
 				return {
-					round: gpNum,
-					name: gpName,
-					records: records,
-					score:
-						records.length === 0
-							? 0
-							: records.map((rec) => rec.score).reduce((a, b) => a + b, 0) / records.length
+					name: team.name,
+					grandsPrix: relevantGP,
+					totalScore: relevantGP.map((gp) => gp.score).reduce((a, b) => a + b, 0)
 				};
-			});
-			return {
-				name: team.name,
-				grandsPrix,
-				totalScore: grandsPrix.map((gp) => gp.score).reduce((a, b) => a + b, 0)
-			};
-		})
-		.sort((a, b) => b.totalScore - a.totalScore);
+			})
+			.sort((a, b) => b.totalScore - a.totalScore)
+	);
 
 	let weightFactor = $state(0.95);
 
 	const grygrProposal = $derived(
-		data.teams
+		teams
 			.map((team) => {
-				let grandsPrix = data.grandsPrix.slice(0, 4).map((gpName, gpIndex) => {
+				let relevantGP = grandsPrix.slice(0, 4).map((gpName, gpIndex) => {
 					const gpNum = gpIndex + 1;
-					const records = data.scores
+					const records = scores
 						.filter((record) => record.round === gpNum && record.team === team.name)
 						.sort((a, b) => b.score - a.score);
 					return {
@@ -70,8 +81,8 @@
 				});
 				return {
 					name: team.name,
-					grandsPrix,
-					totalScore: grandsPrix.map((gp) => gp.score).reduce((a, b) => a + b, 0)
+					grandsPrix: relevantGP,
+					totalScore: relevantGP.map((gp) => gp.score).reduce((a, b) => a + b, 0)
 				};
 			})
 			.sort((a, b) => b.totalScore - a.totalScore)
@@ -91,7 +102,7 @@
 		<div
 			class="team-entry"
 			style="
-            --color: {data.teams.find((_team) => _team.name === team.name)?.color || 'red'};
+            --color: {teams.find((_team) => _team.name === team.name)?.color || 'red'};
         "
 		>
 			<h4>{team.name} ({team.totalScore})</h4>
@@ -117,7 +128,7 @@
 		<div
 			class="team-entry"
 			style="
-        --color: {data.teams.find((_team) => _team.name === team.name)?.color || 'red'};
+        --color: {teams.find((_team) => _team.name === team.name)?.color || 'red'};
         "
 		>
 			<h4>{team.name} ({team.totalScore})</h4>
@@ -155,7 +166,7 @@
 		<div
 			class="team-entry"
 			style="
-            --color: {data.teams.find((_team) => _team.name === team.name)?.color || 'red'};
+            --color: {teams.find((_team) => _team.name === team.name)?.color || 'red'};
         "
 		>
 			<h4>{team.name} ({Math.floor(team.totalScore * 100) / 100})</h4>

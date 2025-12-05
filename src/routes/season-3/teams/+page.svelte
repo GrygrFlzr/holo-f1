@@ -3,10 +3,17 @@
 	import pngLogo from '$lib/assets/logo.png?no-inline';
 	let { data }: PageProps = $props();
 	const rankEmojis = ['🥇', '🥈', '🥉'];
-	const description = data.teams
-		.filter((team) => team.rank <= 3)
-		.map((team) => `${rankEmojis[team.rank - 1]} ${team.name} // ${team.points}`)
-		.join('\n');
+	const description = $derived.by(() => {
+		let _data = $state(data);
+		return _data.teams
+			.filter((team) => team.rank <= 3)
+			.map((team) => `${rankEmojis[team.rank - 1]} ${team.name} // ${team.points}`)
+			.join('\n');
+	});
+	const teams = $derived.by(() => {
+		let _teams = $state(data.teams);
+		return _teams;
+	});
 </script>
 
 <svelte:head>
@@ -22,7 +29,7 @@
 <h2 class="page-header">Season 3 Team Standings</h2>
 
 <ul class="team-rankings">
-	{#each data.teams as team, index (team.name)}
+	{#each teams as team, index (team.name)}
 		<li class="team-entry" style="--team-color: {team.color}">
 			<img
 				class="team-logo"

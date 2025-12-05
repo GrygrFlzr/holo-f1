@@ -1,8 +1,7 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
+	import { asset, resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import '$lib/colors.css';
-	import headerLogo from '$lib/logo-min.svg?raw';
 	let { children } = $props();
 
 	const canonicalUrl = page.url;
@@ -17,7 +16,7 @@
 
 <div class="everything">
 	<header class="header-container">
-		{@html headerLogo}
+		<img src={asset('/logo.webp')} alt="Holocord F1 Watchalongs Prediction Championship" />
 	</header>
 	<nav class="nav-list">
 		<a class="nav-item" href={resolve('/season-3/teams')}>Team Standings</a>

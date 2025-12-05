@@ -18,7 +18,7 @@
 	<header class="header-container">
 		<img
 			class="header-logo"
-			src={asset('/logo.webp')}
+			srcset="{asset('/logo@1x.webp')} 1x, {asset('/logo@2x.webp')} 2x"
 			alt="Holocord F1 Watchalongs Prediction Championship"
 		/>
 	</header>

@@ -19,7 +19,7 @@
 <svelte:head>
 	<meta property="og:title" content="Season 3 Team Standings" />
 	<meta property="og:description" content={description} />
-	<meta property="og:image" content={asset('/logo.webp')} />
+	<meta property="og:image" content={asset('/logo@1x.webp')} />
 	<meta property="og:image:width" content="1193" />
 	<meta property="og:image:height" content="188" />
 	<meta property="twitter:card" content="summary_large_image" />
@@ -33,7 +33,7 @@
 		<li class="team-entry" style="--team-color: {team.color}">
 			<img
 				class="team-logo"
-				src={team.repImage}
+				srcset={team.repImage}
 				alt="{team.name} rep logo"
 				loading={index === 0 ? 'eager' : 'lazy'}
 			/>

@@ -48,7 +48,7 @@
 <svelte:head>
 	<meta property="og:title" content="Season 3 Individual Standings" />
 	<meta property="og:description" content={description} />
-	<meta property="og:image" content={asset('/logo.webp')} />
+	<meta property="og:image" content={asset('/logo@1x.webp')} />
 	<meta property="og:image:width" content="1193" />
 	<meta property="og:image:height" content="188" />
 	<meta property="twitter:card" content="summary_large_image" />

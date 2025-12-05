@@ -19,6 +19,9 @@
 		<img
 			class="header-logo"
 			srcset="{asset('/logo@1x.webp')} 1x, {asset('/logo@2x.webp')} 2x"
+			width={1193}
+			height={188}
+			fetchpriority="high"
 			alt="Holocord F1 Watchalongs Prediction Championship"
 		/>
 	</header>
@@ -28,9 +31,9 @@
 		<a class="nav-item" href={resolve('/season-3/submit')}>Prediction Form</a>
 	</nav>
 
-	<div class="main-content">
+	<main class="main-content">
 		{@render children()}
-	</div>
+	</main>
 </div>
 
 <style>
@@ -56,6 +59,7 @@
 		aspect-ratio: 1193 / 188;
 		max-width: calc(100vw - 2rem);
 		max-height: 6rem;
+		width: auto;
 		padding-top: 1rem;
 		padding-bottom: 1rem;
 	}

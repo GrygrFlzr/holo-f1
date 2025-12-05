@@ -53,8 +53,11 @@
 		gap: 0.5rem;
 	}
 	.header-logo {
-		height: 6rem;
-		padding: 2rem;
+		aspect-ratio: 1193 / 188;
+		max-width: calc(100vw - 2rem);
+		max-height: 6rem;
+		padding-top: 1rem;
+		padding-bottom: 1rem;
 	}
 	.nav-list {
 		width: 100vw;

@@ -16,7 +16,11 @@
 
 <div class="everything">
 	<header class="header-container">
-		<img src={asset('/logo.webp')} alt="Holocord F1 Watchalongs Prediction Championship" />
+		<img
+			class="header-logo"
+			src={asset('/logo.webp')}
+			alt="Holocord F1 Watchalongs Prediction Championship"
+		/>
 	</header>
 	<nav class="nav-list">
 		<a class="nav-item" href={resolve('/season-3/teams')}>Team Standings</a>
@@ -48,7 +52,7 @@
 		color: var(--f1-white);
 		gap: 0.5rem;
 	}
-	.header-container > :global(svg) {
+	.header-logo {
 		height: 6rem;
 		padding: 2rem;
 	}

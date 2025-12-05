@@ -18,9 +18,9 @@
 	<header class="header-container">
 		<img
 			class="header-logo"
-			srcset="{asset('/logo@1x.webp')} 1x, {asset('/logo@2x.webp')} 2x"
-			width={1193}
-			height={188}
+			srcset="{asset('/logo@3x.webp')} 3x, {asset('/logo@2x.webp')} 2x, {asset('/logo@1x.webp')} 1x"
+			width={812}
+			height={128}
 			fetchpriority="high"
 			alt="Holocord F1 Watchalongs Prediction Championship"
 		/>
@@ -56,10 +56,11 @@
 		gap: 0.5rem;
 	}
 	.header-logo {
-		aspect-ratio: 1193 / 188;
+		aspect-ratio: 812 / 128;
 		max-width: calc(100vw - 2rem);
 		max-height: 6rem;
 		width: auto;
+		height: auto;
 		padding-top: 1rem;
 		padding-bottom: 1rem;
 	}

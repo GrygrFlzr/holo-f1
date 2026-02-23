@@ -10,6 +10,7 @@ declare global {
 			env: Env;
 			cf: CfProperties;
 			ctx: ExecutionContext;
+			cf?: IncomingRequestCfProperties;
 		}
 	}
 }

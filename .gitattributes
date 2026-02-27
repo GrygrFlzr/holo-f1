@@ -10,3 +10,8 @@
 *.db binary
 *.sqlite binary
 *.sqlite3 binary
+*.ttf binary
+*.webp binary
+*.png binary
+*.ico binary
+*.jpg binary

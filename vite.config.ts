@@ -8,11 +8,18 @@ export default defineConfig({
 	},
 	build: {
 		sourcemap: false,
+		modulePreload: {
+			polyfill: false
+		},
 		minify: 'terser',
+		cssMinify: 'lightningcss',
 		terserOptions: {
 			ecma: 2020,
 			sourceMap: false,
-			module: true
+			module: true,
+			format: {
+				semicolons: false
+			}
 		}
 	}
 });

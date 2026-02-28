@@ -4,10 +4,16 @@ This is a community-oriented prediction tournament where users predict Formula 1
 
 ## Developing
 
+Install dependencies using `pnpm install`, then, you will need to apply database migrations both initially, and every time you add migrations.
+
 ```bash
-pnpm i
-pnpm dev
+# for dev
+pnpm exec wrangler d1 migrations apply holo-f1 --local
+# for prod
+pnpm exec wrangler d1 migrations apply holo-f1 --remote
 ```
+
+Conventionally, prefer backwards-compatible schema changes so that any existing workers dealing with newer schema do not behave unexpectedly.
 
 ## Building
 

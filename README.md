@@ -8,9 +8,9 @@ Install dependencies using `pnpm install`, then, you will need to apply database
 
 ```bash
 # for dev
-pnpm exec wrangler d1 migrations apply holo-f1 --local
+pnpm db:migrate:local
 # for prod
-pnpm exec wrangler d1 migrations apply holo-f1 --remote
+pnpm db:migrate:remote
 ```
 
 Conventionally, prefer backwards-compatible schema changes so that any existing workers dealing with newer schema do not behave unexpectedly.

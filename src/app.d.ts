@@ -3,14 +3,20 @@
 declare global {
 	namespace App {
 		// interface Error {}
-		// interface Locals {}
+		interface Locals {
+			user: {
+				discord_id: string;
+				display_name: string;
+				avatar_hash: string | null;
+				role: 'user' | 'steward' | 'admin';
+			} | null;
+		}
 		// interface PageData {}
 		// interface PageState {}
 		interface Platform {
 			env: Env;
 			cf: CfProperties;
 			ctx: ExecutionContext;
-			cf?: IncomingRequestCfProperties;
 		}
 	}
 }

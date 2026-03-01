@@ -1,0 +1,26 @@
+import { error, redirect } from '@sveltejs/kit';
+import type { RequestHandler } from './$types';
+
+export const GET: RequestHandler = ({ url, platform, cookies }) => {
+	const env = platform?.env;
+	if (!env) error(500, 'Platform not available');
+
+	const state = crypto.randomUUID();
+	cookies.set('oauth_state', state, {
+		httpOnly: true,
+		secure: url.protocol === 'https:',
+		sameSite: 'lax',
+		path: '/',
+		maxAge: 600
+	});
+
+	const params = new URLSearchParams({
+		client_id: env.DISCORD_CLIENT_ID,
+		redirect_uri: `${url.origin}/auth/callback`,
+		response_type: 'code',
+		scope: 'identify',
+		state
+	});
+
+	redirect(307, `https://discord.com/api/oauth2/authorize?${params.toString()}`);
+};

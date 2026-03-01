@@ -3,11 +3,11 @@ import type { RequestHandler } from './$types';
 
 export const prerender = true;
 
-export const GET: RequestHandler = () => {
+export const GET: RequestHandler = ({ setHeaders }) => {
 	const mimeType = 'text/tab-separated-values';
-	const headers = new Headers({
+	setHeaders({
 		'Content-Type': mimeType
 	});
 
-	return new Response(tsvRawContents, { headers });
+	return new Response(tsvRawContents);
 };

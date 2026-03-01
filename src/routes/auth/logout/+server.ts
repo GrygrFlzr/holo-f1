@@ -3,5 +3,5 @@ import type { RequestHandler } from './$types';
 
 export const POST: RequestHandler = ({ cookies }) => {
 	cookies.delete('session', { path: '/' });
-	redirect(307, '/');
+	redirect(302, '/'); // 307 will attempt to redirect as POST
 };

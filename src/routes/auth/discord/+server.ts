@@ -22,5 +22,5 @@ export const GET: RequestHandler = ({ url, platform, cookies }) => {
 		state
 	});
 
-	redirect(307, `https://discord.com/api/oauth2/authorize?${params.toString()}`);
+	redirect(302, `https://discord.com/api/oauth2/authorize?${params.toString()}`);
 };

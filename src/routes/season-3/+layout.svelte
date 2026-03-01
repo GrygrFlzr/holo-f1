@@ -17,7 +17,6 @@
 	<nav class="nav-list">
 		<a class="nav-item" href={resolve('/season-3/teams')}>Team Standings</a>
 		<a class="nav-item" href={resolve('/season-3/individuals')}>Individual Standings</a>
-		<a class="nav-item" href={resolve('/season-3/submit')}>Prediction Form</a>
 	</nav>
 
 	<main class="main-content">
@@ -58,7 +57,7 @@
 		max-width: 840px;
 		margin: 0 auto;
 		display: grid;
-		grid-template-columns: 1fr 1fr 1fr;
+		grid-template-columns: 1fr 1fr;
 		gap: 0.5rem;
 	}
 	.nav-item {

@@ -51,25 +51,33 @@ export const GET: RequestHandler = async ({ url, platform, cookies }) => {
 	if (!userProfileResponse.ok) error(500, 'Failed to fetch Discord profile');
 	const discordUser = (await userProfileResponse.json()) as DiscordUser;
 
-	// upsert user but retain role
-	const displayName = discordUser.global_name ?? discordUser.username;
+	// upsert user - updated discord_name and avatar
+	// retain custom_name and role
+	const discordName = discordUser.global_name ?? discordUser.username;
 	await env.DB.prepare(
-		`insert into users (discord_id, display_name, avatar_hash)
+		`insert into users (discord_id, discord_name, avatar_hash)
         values (?, ?, ?)
         on conflict (discord_id) do update set
-            display_name = excluded.display_name,
+            discord_name = excluded.discord_name,
             avatar_hash = excluded.avatar_hash`
 	)
-		.bind(discordUser.id, displayName, discordUser.avatar)
+		.bind(discordUser.id, discordName, discordUser.avatar)
 		.run();
+
+	// read role and custom_name
+	const row = await env.DB.prepare(
+		'select role, custom_name from users where discord_id = ?'
+	)
+		.bind(discordUser.id)
+		.first<{ role: string, custom_name: string | null }>();
 
 	// set cookie
 	const session = await createSessionCookie(
 		{
 			sub: discordUser.id,
-			name: displayName,
+			name: row?.custom_name ?? discordName,
 			avatar: discordUser.avatar,
-			role: 'user'
+			role: (row?.role ?? 'user') as 'user' | 'steward' | 'admin'
 		},
 		env.AUTH_SECRET
 	);

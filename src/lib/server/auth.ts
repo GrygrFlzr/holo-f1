@@ -2,6 +2,7 @@ import { error } from '@sveltejs/kit';
 
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
+const ROLE_LEVEL: Record<string, number> = { user: 0, steward: 1, admin: 2 };
 
 /**
  * re-derived per-session
@@ -99,8 +100,9 @@ export async function requireRole(
 
 	if (!row) error(401, 'User not found');
 
-	const allowed = minRole === 'admin' ? row.role === 'admin' : row.role === 'steward';
-	if (!allowed) error(403, 'Insufficient permissions');
+	const userLevel = ROLE_LEVEL[row.role] ?? 0;
+	const requiredLevel = ROLE_LEVEL[minRole] ?? 99;
+	if (userLevel < requiredLevel) error(403, 'Insufficient permissions');
 
 	// return user with annotated role
 	return { ...user, role: row.role as 'user' | 'steward' | 'admin' };

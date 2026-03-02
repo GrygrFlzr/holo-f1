@@ -70,7 +70,9 @@ export async function verifySessionCookie(
 		const valid = await crypto.subtle.verify('HMAC', key, sig, data);
 		if (!valid) return null;
 
-		const { exp, sub, name, avatar, role } = JSON.parse(decoder.decode(data)) as SessionPayload;
+		const { exp, sub, name, avatar, role } = JSON.parse(
+			decoder.decode(data)
+		) satisfies SessionPayload;
 
 		if (exp < Math.floor(Date.now() / 1000)) return null;
 

@@ -2,7 +2,7 @@ import type { PageLoad } from './$types';
 
 export const csr = false;
 export const prerender = true;
-export const load: PageLoad = async ({ parent }) => {
+export const load = (async ({ parent }) => {
 	const { sheetData, teams, racesCompleted } = await parent();
 
 	const individuals = sheetData.split('\n').map((row) => {
@@ -55,4 +55,4 @@ export const load: PageLoad = async ({ parent }) => {
 		})),
 		individuals
 	};
-};
+}) satisfies PageLoad;

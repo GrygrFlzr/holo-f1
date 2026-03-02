@@ -11,7 +11,7 @@ const sizes = ['3x', '2x', '1x'];
 const baseToAsset = (name: string) =>
 	sizes.map((size) => `${asset(`/profiles/${name}@${size}.webp`)} ${size}`).join(', ');
 
-export const load: LayoutLoad = async ({ fetch }) => {
+export const load = (async ({ fetch }) => {
 	const response = await fetch('/season-3/data.tsv');
 	const sheetData = await response.text();
 	const racesCompleted = 24;
@@ -104,4 +104,4 @@ export const load: LayoutLoad = async ({ fetch }) => {
 	];
 
 	return { sheetData, racesCompleted, teams };
-};
+}) satisfies LayoutLoad;

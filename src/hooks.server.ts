@@ -1,7 +1,7 @@
 import { verifySessionCookie } from '$lib/server/auth';
 import type { Handle } from '@sveltejs/kit';
 
-export const handle: Handle = async ({ event, resolve }) => {
+export const handle = (async ({ event, resolve }) => {
 	event.locals.user = null;
 
 	const session = event.cookies.get('session');
@@ -22,4 +22,4 @@ export const handle: Handle = async ({ event, resolve }) => {
 	}
 
 	return resolve(event);
-};
+}) satisfies Handle;

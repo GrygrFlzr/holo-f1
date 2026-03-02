@@ -13,7 +13,7 @@ interface DiscordUser {
 	avatar: string | null;
 }
 
-export const GET: RequestHandler = async ({ url, platform, cookies }) => {
+export const GET = (async ({ url, platform, cookies }) => {
 	const env = platform?.env;
 	if (!env) error(500, 'Platform not available');
 
@@ -42,14 +42,14 @@ export const GET: RequestHandler = async ({ url, platform, cookies }) => {
 		})
 	});
 	if (!tokenResponse.ok) error(500, 'Token exchange failed');
-	const { access_token } = (await tokenResponse.json()) as TokenResponse;
+	const { access_token } = (await tokenResponse.json()) satisfies TokenResponse;
 
 	// fetch profile
 	const userProfileResponse = await fetch('https://discord.com/api/users/@me', {
 		headers: { Authorization: `Bearer ${access_token}` }
 	});
 	if (!userProfileResponse.ok) error(500, 'Failed to fetch Discord profile');
-	const discordUser = (await userProfileResponse.json()) as DiscordUser;
+	const discordUser = (await userProfileResponse.json()) satisfies DiscordUser;
 
 	// upsert user - updated discord_name and avatar
 	// retain custom_name and role
@@ -65,11 +65,9 @@ export const GET: RequestHandler = async ({ url, platform, cookies }) => {
 		.run();
 
 	// read role and custom_name
-	const row = await env.DB.prepare(
-		'select role, custom_name from users where discord_id = ?'
-	)
+	const row = await env.DB.prepare('select role, custom_name from users where discord_id = ?')
 		.bind(discordUser.id)
-		.first<{ role: string, custom_name: string | null }>();
+		.first<{ role: string; custom_name: string | null }>();
 
 	// set cookie
 	const session = await createSessionCookie(
@@ -90,4 +88,4 @@ export const GET: RequestHandler = async ({ url, platform, cookies }) => {
 	});
 
 	redirect(302, '/');
-};
+}) satisfies RequestHandler;

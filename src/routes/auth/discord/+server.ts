@@ -1,7 +1,7 @@
 import { error, redirect } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 
-export const GET: RequestHandler = ({ url, platform, cookies }) => {
+export const GET = (({ url, platform, cookies }) => {
 	const env = platform?.env;
 	if (!env) error(500, 'Platform not available');
 
@@ -23,4 +23,4 @@ export const GET: RequestHandler = ({ url, platform, cookies }) => {
 	});
 
 	redirect(302, `https://discord.com/api/oauth2/authorize?${params.toString()}`);
-};
+}) satisfies RequestHandler;

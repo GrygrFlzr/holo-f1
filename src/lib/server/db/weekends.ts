@@ -1,3 +1,5 @@
+import type { D1Queryable } from '$lib/server/db/types';
+
 /**
  * direct representation of weekends SQLite row
  */
@@ -13,28 +15,32 @@ export interface Weekend {
 	watchalong_host: string | null;
 }
 
-export async function getOpenWeekend(db: D1Database): Promise<Weekend | null> {
+export async function getOpenWeekend(db: D1Queryable): Promise<Weekend | null> {
 	return db
 		.prepare(
 			`
-			select
-				id
-				,season
-				,slug
-				,name
-				,lock_time
-				,is_sprint
-				,watchalong_host
+			select id, season, slug, name, lock_time, is_sprint, watchalong_host
 			from weekends
-			where
-				lock_time > datetime('now') and
-				scored = 0 and
-				1 = 1
-			order by
-				lock_time asc
-				,name asc
+			where lock_time > datetime('now')
+				and scored = 0
+			order by lock_time asc, name asc
 			limit 1
 			`
 		)
+		.first<Weekend>();
+}
+
+export async function getOpenWeekendById(db: D1Queryable, id: number): Promise<Weekend | null> {
+	return db
+		.prepare(
+			`
+			select id, season, slug, name, lock_time, is_sprint, watchalong_host
+			from weekends
+			where id = ?
+				and lock_time > datetime('now')
+				and scored = 0
+			`
+		)
+		.bind(id)
 		.first<Weekend>();
 }

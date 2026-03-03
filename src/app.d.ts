@@ -10,6 +10,7 @@ declare global {
 				avatar_hash: string | null;
 				role: 'user' | 'steward' | 'admin';
 			} | null;
+			db?: import('$lib/server/db/types').D1Queryable;
 		}
 		// interface PageData {}
 		// interface PageState {}

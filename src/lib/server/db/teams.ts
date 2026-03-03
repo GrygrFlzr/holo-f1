@@ -1,3 +1,5 @@
+import type { D1Queryable } from '$lib/server/db/types';
+
 export interface Team {
 	id: number;
 	name: string;
@@ -6,38 +8,29 @@ export interface Team {
 	oshi_mark: string | null;
 }
 
-export async function getAllTeams(db: D1Database): Promise<Team[]> {
+export async function getAllTeams(db: D1Queryable): Promise<Team[]> {
 	const { results } = await db
 		.prepare(
 			`
-			select
-				id
-				,name
-				,color
-				,image_key
-				,oshi_mark
+			select id, name, color, image_key, oshi_mark
 			from teams
-			order by
-				name asc
+			order by name asc
 			`
 		)
 		.all<Team>();
 	return results;
 }
 
-export async function validateTeamId(db: D1Database, id: number): Promise<boolean> {
+export async function validateTeamId(db: D1Queryable, id: number): Promise<boolean> {
 	const row = await db
 		.prepare(
 			`
-			select
-				id
+			select id
 			from teams
-			where
-				id = ? and
-				1 = 1
+			where id = ?
 			`
 		)
 		.bind(id)
-		.first();
+		.first<{ id: number }>();
 	return row !== null;
 }

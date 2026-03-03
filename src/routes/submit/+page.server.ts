@@ -1,0 +1,172 @@
+import { error, fail } from '@sveltejs/kit';
+import type { Actions, PageServerLoad } from './$types';
+import type { Weekend } from '$lib/server/db/weekends';
+import type { Driver } from '$lib/server/db/drivers';
+import type { Team } from '$lib/server/db/teams';
+import type { Submission } from '$lib/server/db/submissions';
+import { upsertSubmission, deleteSubmission } from '$lib/server/db/submissions';
+import { getOpenWeekendById } from '$lib/server/db/weekends';
+import { validateDriverIds } from '$lib/server/db/drivers';
+import { validateTeamId } from '$lib/server/db/teams';
+import { parseSubmissionForm } from '$lib/server/validation';
+import { getCached, setCache } from '$lib/server/db/cache';
+import { typedBatch } from '$lib/server/db/types';
+
+export const load = (async ({ locals }) => {
+	const db = locals.db;
+	if (!db) error(500, 'Database not available');
+
+	const cached = getCached();
+	const weekendStatement = db.prepare(
+		`
+		select id, season, slug, name, lock_time, is_sprint, watchalong_host
+		from weekends
+		where lock_time > datetime('now') and scored = 0
+		order by lock_time asc
+		limit 1
+		`
+	);
+	const driversStatement = db.prepare(
+		`
+		select id, code, name, category
+		from drivers
+		order by category asc, name asc
+		`
+	);
+	const teamsStatement = db.prepare(
+		`
+		select id, name, color, image_key, oshi_mark
+		from teams
+		order by name asc
+		`
+	);
+	const unboundSubmissionStatement = db.prepare(
+		`
+		select
+			s.pole_driver_id, s.p1_driver_id, s.p2_driver_id
+			, s.p3_driver_id, s.p10_driver_id, s.dotd_driver_id
+			, s.bold_prediction, s.team_id
+		from submissions s
+		join weekends w on s.weekend_id = w.id
+		where s.user_id = ?
+			and w.lock_time > datetime('now')
+			and w.scored = 0
+		order by w.lock_time asc
+		limit 1
+		`
+	);
+
+	let weekend: Weekend | null;
+	let drivers: Driver[];
+	let teams: Team[];
+	let submission: Submission | null;
+
+	if (locals.user) {
+		// logged in branch
+		const submissionStatement = unboundSubmissionStatement.bind(locals.user.discord_id);
+		if (cached) {
+			const [weekendResult, submissionResult] = await typedBatch<[Weekend, Submission]>(db, [
+				weekendStatement,
+				submissionStatement
+			]);
+			weekend = weekendResult.results[0] ?? null;
+			drivers = cached.drivers;
+			teams = cached.teams;
+			submission = submissionResult.results[0] ?? null;
+		} else {
+			const [weekendResult, driversResult, teamsResult, submissionResult] = await typedBatch<
+				[Weekend, Driver, Team, Submission]
+			>(db, [weekendStatement, driversStatement, teamsStatement, submissionStatement]);
+			setCache(driversResult.results, teamsResult.results);
+			weekend = weekendResult.results[0] ?? null;
+			drivers = driversResult.results;
+			teams = teamsResult.results;
+			submission = submissionResult.results[0] ?? null;
+		}
+	} else {
+		// logged out branch
+		if (cached) {
+			const [weekendResult] = await typedBatch<[Weekend]>(db, [weekendStatement]);
+			weekend = weekendResult.results[0] ?? null;
+			drivers = cached.drivers;
+			teams = cached.teams;
+			submission = null;
+		} else {
+			const [weekendResult, driversResult, teamsResult] = await typedBatch<[Weekend, Driver, Team]>(
+				db,
+				[weekendStatement, driversStatement, teamsStatement]
+			);
+			setCache(driversResult.results, teamsResult.results);
+			weekend = weekendResult.results[0] ?? null;
+			drivers = driversResult.results;
+			teams = teamsResult.results;
+			submission = null;
+		}
+	}
+
+	return { weekend, drivers, teams, submission };
+}) satisfies PageServerLoad;
+
+export const actions = {
+	save: async ({ request, locals }) => {
+		if (!locals.user) error(401, 'Not authenticated');
+		const formData = await request.formData();
+		const rawWeekendId = formData.get('weekend_id');
+		if (typeof rawWeekendId !== 'string' || rawWeekendId === '') {
+			return fail(400, { error: 'Missing weekend ID.' });
+		}
+		const weekendId = Number(rawWeekendId);
+		if (!Number.isInteger(weekendId) || weekendId <= 0) {
+			return fail(400, { error: 'Invalid weekend.' });
+		}
+
+		const db = locals.db;
+		if (!db) error(500, 'Database not available');
+
+		const weekend = await getOpenWeekendById(db, weekendId);
+		if (!weekend) return fail(400, { error: 'Weekend is locked or does not exist.' });
+
+		const parsed = parseSubmissionForm(formData);
+		if (!parsed.ok) return fail(400, { error: parsed.error });
+
+		const { drivers, teamId, boldPrediction } = parsed.data;
+		const allDriverIds = Object.values(drivers);
+		const [driversValid, teamValid] = await Promise.all([
+			validateDriverIds(db, allDriverIds),
+			validateTeamId(db, teamId)
+		]);
+
+		if (!driversValid) return fail(400, { error: 'One or more selected drivers do not exist.' });
+		if (!teamValid) return fail(400, { error: 'Selected team does not exist.' });
+
+		await upsertSubmission(db, locals.user.discord_id, weekend.id, {
+			...drivers,
+			bold_prediction: boldPrediction,
+			team_id: teamId
+		});
+
+		return { success: true };
+	},
+
+	clear: async ({ request, locals }) => {
+		if (!locals.user) error(401, 'Not authenticated');
+		const formData = await request.formData();
+		const rawWeekendId = formData.get('weekend_id');
+		if (typeof rawWeekendId !== 'string' || rawWeekendId === '') {
+			return fail(400, { error: 'Missing weekend ID.' });
+		}
+		const weekendId = Number(rawWeekendId);
+		if (!Number.isInteger(weekendId) || weekendId <= 0) {
+			return fail(400, { error: 'Invalid weekend.' });
+		}
+
+		const db = locals.db;
+		if (!db) error(500, 'Database not available');
+
+		const weekend = await getOpenWeekendById(db, weekendId);
+		if (!weekend) return fail(400, { error: 'Weekend is locked or does not exist.' });
+
+		await deleteSubmission(db, locals.user.discord_id, weekend.id);
+		return { cleared: true };
+	}
+} satisfies Actions;

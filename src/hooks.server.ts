@@ -1,5 +1,5 @@
 import { SESSION_COOKIE, verifySessionCookie } from '$lib/server/auth';
-import { createSession, persistBookmark } from '$lib/server/db/session';
+import { createSession } from '$lib/server/db/session';
 import type { Handle } from '@sveltejs/kit';
 
 export const handle = (async ({ event, resolve }) => {
@@ -29,7 +29,14 @@ export const handle = (async ({ event, resolve }) => {
 
 	const response = await resolve(event);
 	if (dbSession) {
-		persistBookmark(dbSession, event.cookies);
+		const bookmark = dbSession.getBookmark();
+		if (bookmark) {
+			const secure = event.url.protocol === 'https:' ? ' Secure;' : '';
+			response.headers.append(
+				'Set-Cookie',
+				`d1-bookmark=${bookmark}; Path=/; HttpOnly;${secure} SameSite=Lax; Max-Age=300`
+			);
+		}
 	}
 	return response;
 }) satisfies Handle;

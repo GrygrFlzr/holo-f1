@@ -1,10 +1,8 @@
-import { error, redirect } from '@sveltejs/kit';
+import { redirect } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
+import { env } from '$env/dynamic/private';
 
-export const GET = (({ url, platform, cookies }) => {
-	const env = platform?.env;
-	if (!env) error(500, 'Platform not available');
-
+export const GET = (({ url, cookies }) => {
 	const state = crypto.randomUUID();
 	cookies.set('oauth_state', state, {
 		httpOnly: true,

@@ -92,5 +92,5 @@ export const GET = (async ({ url, locals, cookies }) => {
 		maxAge: 30 * 24 * 60 * 60
 	});
 
-	redirect(302, '/');
+	redirect(302, '/submit');
 }) satisfies RequestHandler;

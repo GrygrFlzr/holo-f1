@@ -10,16 +10,18 @@ export interface Driver {
 	category: string;
 }
 
+export function allDriversStatement(db: D1Queryable): D1PreparedStatement {
+	return db.prepare(
+		`
+		select id, code, name, category
+		from drivers
+		order by category asc, code asc
+		`
+	);
+}
+
 export async function getAllDrivers(db: D1Queryable): Promise<Driver[]> {
-	const { results } = await db
-		.prepare(
-			`
-			select id, code, name, category
-			from drivers
-			order by category asc, name asc
-			`
-		)
-		.all<Driver>();
+	const { results } = await allDriversStatement(db).all<Driver>();
 	return results;
 }
 

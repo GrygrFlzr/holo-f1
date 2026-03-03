@@ -15,19 +15,21 @@ export interface Weekend {
 	watchalong_host: string | null;
 }
 
+export function openWeekendStatement(db: D1Queryable): D1PreparedStatement {
+	return db.prepare(
+		`
+		select id, season, slug, name, lock_time, is_sprint, watchalong_host
+		from weekends
+		where lock_time > datetime('now')
+			and scored = 0
+		order by lock_time asc
+		limit 1
+		`
+	);
+}
+
 export async function getOpenWeekend(db: D1Queryable): Promise<Weekend | null> {
-	return db
-		.prepare(
-			`
-			select id, season, slug, name, lock_time, is_sprint, watchalong_host
-			from weekends
-			where lock_time > datetime('now')
-				and scored = 0
-			order by lock_time asc, name asc
-			limit 1
-			`
-		)
-		.first<Weekend>();
+	return openWeekendStatement(db).first<Weekend>();
 }
 
 export async function getOpenWeekendById(db: D1Queryable, id: number): Promise<Weekend | null> {

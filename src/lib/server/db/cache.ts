@@ -1,3 +1,4 @@
+import { dev } from '$app/environment';
 import type { Driver } from '$lib/server/db/drivers';
 import type { Team } from '$lib/server/db/teams';
 
@@ -12,6 +13,7 @@ export function getCached(): {
 	drivers: Driver[];
 	teams: Team[];
 } | null {
+	if (dev) return null;
 	if (drivers && teams && Date.now() < expiry) {
 		return { drivers, teams };
 	}
@@ -19,6 +21,7 @@ export function getCached(): {
 }
 
 export function setCache(d: Driver[], t: Team[]): void {
+	if (dev) return;
 	drivers = d;
 	teams = t;
 	expiry = Date.now() + TTL;

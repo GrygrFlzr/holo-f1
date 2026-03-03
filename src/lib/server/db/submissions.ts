@@ -48,6 +48,7 @@ export async function upsertSubmission(
 	weekendId: number,
 	input: SubmissionInput
 ): Promise<void> {
+	console.log(input);
 	await db
 		.prepare(
 			`

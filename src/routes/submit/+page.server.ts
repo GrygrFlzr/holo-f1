@@ -5,9 +5,9 @@ import type { Driver } from '$lib/server/db/drivers';
 import type { Team } from '$lib/server/db/teams';
 import type { Submission } from '$lib/server/db/submissions';
 import { upsertSubmission, deleteSubmission } from '$lib/server/db/submissions';
-import { getOpenWeekendById } from '$lib/server/db/weekends';
-import { validateDriverIds } from '$lib/server/db/drivers';
-import { validateTeamId } from '$lib/server/db/teams';
+import { getOpenWeekendById, openWeekendStatement } from '$lib/server/db/weekends';
+import { allDriversStatement, validateDriverIds } from '$lib/server/db/drivers';
+import { allTeamsStatement, validateTeamId } from '$lib/server/db/teams';
 import { parseSubmissionForm } from '$lib/server/validation';
 import { getCached, setCache } from '$lib/server/db/cache';
 import { typedBatch } from '$lib/server/db/types';
@@ -17,29 +17,9 @@ export const load = (async ({ locals }) => {
 	if (!db) error(500, 'Database not available');
 
 	const cached = getCached();
-	const weekendStatement = db.prepare(
-		`
-		select id, season, slug, name, lock_time, is_sprint, watchalong_host
-		from weekends
-		where lock_time > datetime('now') and scored = 0
-		order by lock_time asc
-		limit 1
-		`
-	);
-	const driversStatement = db.prepare(
-		`
-		select id, code, name, category
-		from drivers
-		order by category asc, name asc
-		`
-	);
-	const teamsStatement = db.prepare(
-		`
-		select id, name, color, image_key, oshi_mark
-		from teams
-		order by name asc
-		`
-	);
+	const weekendStatement = openWeekendStatement(db);
+	const driversStatement = allDriversStatement(db);
+	const teamsStatement = allTeamsStatement(db);
 	const unboundSubmissionStatement = db.prepare(
 		`
 		select

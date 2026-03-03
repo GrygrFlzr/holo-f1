@@ -8,16 +8,18 @@ export interface Team {
 	oshi_mark: string | null;
 }
 
+export function allTeamsStatement(db: D1Queryable): D1PreparedStatement {
+	return db.prepare(
+		`
+		select id, name, color, image_key, oshi_mark
+		from teams
+		order by name asc
+		`
+	);
+}
+
 export async function getAllTeams(db: D1Queryable): Promise<Team[]> {
-	const { results } = await db
-		.prepare(
-			`
-			select id, name, color, image_key, oshi_mark
-			from teams
-			order by name asc
-			`
-		)
-		.all<Team>();
+	const { results } = await allTeamsStatement(db).all<Team>();
 	return results;
 }
 

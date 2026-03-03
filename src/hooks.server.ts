@@ -1,25 +1,35 @@
-import { verifySessionCookie } from '$lib/server/auth';
+import { SESSION_COOKIE, verifySessionCookie } from '$lib/server/auth';
+import { createSession, persistBookmark } from '$lib/server/db/session';
 import type { Handle } from '@sveltejs/kit';
 
 export const handle = (async ({ event, resolve }) => {
-	event.locals.user = null;
+	let dbSession: D1DatabaseSession | undefined;
 
-	const session = event.cookies.get('session');
-	if (!session) return resolve(event);
-
-	let authSecret: string | undefined;
+	let env: Env | undefined;
 	try {
-		authSecret = event.platform?.env?.AUTH_SECRET;
+		const maybeEnv = event.platform!.env;
+		void maybeEnv.DB; // should throw if unavailable
+		env = maybeEnv;
 	} catch {
-		// prerenderable routes cannot access platform.env
-		return resolve(event);
-	}
-	if (!authSecret) return resolve(event);
-
-	const user = await verifySessionCookie(session, authSecret);
-	if (user) {
-		event.locals.user = user;
+		// bindings unavailable
 	}
 
-	return resolve(event);
+	event.locals.user = null;
+	if (env) {
+		const cookie = event.cookies.get(SESSION_COOKIE);
+		if (cookie) {
+			const user = await verifySessionCookie(cookie, env.AUTH_SECRET);
+			if (user) {
+				event.locals.user = user;
+			}
+		}
+		dbSession = createSession(env.DB, event.cookies);
+		event.locals.db = dbSession;
+	}
+
+	const response = await resolve(event);
+	if (dbSession) {
+		persistBookmark(dbSession, event.cookies);
+	}
+	return response;
 }) satisfies Handle;

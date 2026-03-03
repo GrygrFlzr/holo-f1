@@ -1,5 +1,6 @@
 import { error, redirect } from '@sveltejs/kit';
-import { createSessionCookie } from '$lib/server/auth';
+import { createSessionCookie, SESSION_COOKIE } from '$lib/server/auth';
+import { env } from '$env/dynamic/private';
 import type { RequestHandler } from './$types';
 
 interface TokenResponse {
@@ -13,9 +14,9 @@ interface DiscordUser {
 	avatar: string | null;
 }
 
-export const GET = (async ({ url, platform, cookies }) => {
-	const env = platform?.env;
-	if (!env) error(500, 'Platform not available');
+export const GET = (async ({ url, locals, cookies }) => {
+	const db = locals.db;
+	if (!db) error(500, 'Database not available');
 
 	// verify state
 	const code = url.searchParams.get('code');
@@ -54,18 +55,22 @@ export const GET = (async ({ url, platform, cookies }) => {
 	// upsert user - updated discord_name and avatar
 	// retain custom_name and role
 	const discordName = discordUser.global_name ?? discordUser.username;
-	await env.DB.prepare(
-		`insert into users (discord_id, discord_name, avatar_hash)
-        values (?, ?, ?)
-        on conflict (discord_id) do update set
-            discord_name = excluded.discord_name,
-            avatar_hash = excluded.avatar_hash`
-	)
+	await db
+		.prepare(
+			`
+			insert into users (discord_id, discord_name, avatar_hash)
+			values (?, ?, ?)
+			on conflict (discord_id) do update set
+			discord_name = excluded.discord_name,
+			avatar_hash = excluded.avatar_hash
+			`
+		)
 		.bind(discordUser.id, discordName, discordUser.avatar)
 		.run();
 
 	// read role and custom_name
-	const row = await env.DB.prepare('select role, custom_name from users where discord_id = ?')
+	const row = await db
+		.prepare('select role, custom_name from users where discord_id = ?')
 		.bind(discordUser.id)
 		.first<{ role: string; custom_name: string | null }>();
 
@@ -79,7 +84,7 @@ export const GET = (async ({ url, platform, cookies }) => {
 		},
 		env.AUTH_SECRET
 	);
-	cookies.set('session', session, {
+	cookies.set(SESSION_COOKIE, session, {
 		httpOnly: true,
 		secure: url.protocol === 'https:',
 		sameSite: 'lax',

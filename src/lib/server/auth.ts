@@ -2,7 +2,8 @@ import { error } from '@sveltejs/kit';
 
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
-const ROLE_LEVEL: Record<string, number> = { user: 0, steward: 1, admin: 2 };
+const ROLE_LEVEL: Record<string, number> = { user: 0, steward: 1, admin: 2 } as const;
+export const SESSION_COOKIE = 'session' as const;
 
 /**
  * re-derived per-session
@@ -42,12 +43,12 @@ interface SessionPayload {
 
 type SessionUser = Omit<SessionPayload, 'exp'>;
 
-const SESSION_MAX_AGE_SECONDS = 30 * 24 * 60 * 60;
+const SESSION_MAX_AGE_SECONDS = 2_592_000 as const; // 30 days
 
 export async function createSessionCookie(user: SessionUser, secret: string): Promise<string> {
 	const payload: SessionPayload = {
 		...user,
-		exp: Math.floor(Date.now() / 1000) + SESSION_MAX_AGE_SECONDS
+		exp: Math.floor(Date.now() / 1_000) + SESSION_MAX_AGE_SECONDS
 	};
 	const key = await getKey(secret);
 	const data = encoder.encode(JSON.stringify(payload));
@@ -74,7 +75,7 @@ export async function verifySessionCookie(
 			decoder.decode(data)
 		) satisfies SessionPayload;
 
-		if (exp < Math.floor(Date.now() / 1000)) return null;
+		if (exp < Math.floor(Date.now() / 1_000)) return null;
 
 		return {
 			discord_id: sub,

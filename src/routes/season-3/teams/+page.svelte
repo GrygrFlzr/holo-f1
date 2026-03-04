@@ -4,17 +4,13 @@
 
 	let { data }: PageProps = $props();
 	const rankEmojis = ['🥇', '🥈', '🥉'];
-	const description = $derived.by(() => {
-		let _data = $state(data);
-		return _data.teams
+	const { teams } = $derived(data);
+	const description = $derived(
+		teams
 			.filter((team) => team.rank <= 3)
 			.map((team) => `${rankEmojis[team.rank - 1]} ${team.name} // ${team.points}`)
-			.join('\n');
-	});
-	const teams = $derived.by(() => {
-		let _teams = $state(data.teams);
-		return _teams;
-	});
+			.join(encodeURI('\n'))
+	);
 </script>
 
 <svelte:head>

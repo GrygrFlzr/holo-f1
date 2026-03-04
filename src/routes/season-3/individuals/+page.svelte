@@ -3,11 +3,7 @@
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
-	const [individuals, teams] = $derived.by(() => {
-		let _individuals = $state(data.individuals);
-		let _teams = $state(data.teams);
-		return [_individuals, _teams];
-	});
+	const { individuals, teams } = $derived(data);
 	const rankEmojis = ['🥇', '🥈', '🥉'];
 	const description = $derived(
 		individuals

@@ -4,7 +4,7 @@
 	let { lockTime }: { lockTime: string } = $props();
 
 	let now = new SvelteDate();
-	let mounted = $state(false);
+	let mounted = $state.raw(false);
 
 	const deadline = $derived(new Date(lockTime).getTime());
 

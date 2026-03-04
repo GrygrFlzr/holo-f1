@@ -106,7 +106,6 @@
 					<select id="team_id" name="team_id" required>
 						<option value="" disabled selected={!submission?.team_id}>Select a team…</option>
 						{#each teams as team (team.id)}
-							{@const thing = team.oshi_mark ?? ''}
 							<option value={team.id} selected={submission?.team_id === team.id}>
 								{team.name}
 								{team.oshi_mark ?? ''}

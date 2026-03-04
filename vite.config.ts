@@ -4,9 +4,10 @@ import { defineConfig } from 'vite';
 export default defineConfig({
 	plugins: [sveltekit()],
 	server: {
-		allowedHosts: ['localhost', '.cybeast.dev']
+		allowedHosts: ['localhost']
 	},
 	build: {
+		reportCompressedSize: false,
 		sourcemap: false,
 		modulePreload: {
 			polyfill: false

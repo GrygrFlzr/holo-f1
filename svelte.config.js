@@ -10,7 +10,10 @@ const config = {
 					path: '.wrangler/state/v3'
 				}
 			}
-		})
+		}),
+		prerender: {
+			origin: 'https://f1.kfp.yt'
+		}
 	}
 };
 

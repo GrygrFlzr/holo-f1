@@ -3,10 +3,13 @@
 	import './colors.css';
 	let { children } = $props();
 
-	const canonicalUrl = page.url;
-	canonicalUrl.protocol = 'https:';
-	canonicalUrl.host = 'f1.kfp.yt';
-	canonicalUrl.port = '443';
+	const canonicalUrl = $derived.by(() => {
+		let { url } = page;
+		url.protocol = 'https:';
+		url.host = 'f1.kfp.yt';
+		url.port = '443';
+		return url;
+	});
 </script>
 
 <svelte:head>

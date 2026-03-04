@@ -1,6 +1,7 @@
 <script lang="ts">
-	import type { PageProps } from './$types';
 	import { asset } from '$app/paths';
+	import type { PageProps } from './$types';
+
 	let { data }: PageProps = $props();
 	const rankEmojis = ['🥇', '🥈', '🥉'];
 	const description = $derived.by(() => {

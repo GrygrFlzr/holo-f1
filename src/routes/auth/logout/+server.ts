@@ -1,6 +1,6 @@
 import { redirect } from '@sveltejs/kit';
-import type { RequestHandler } from './$types';
 import { SESSION_COOKIE } from '$lib/server/auth';
+import type { RequestHandler } from './$types';
 
 export const POST = (({ cookies }) => {
 	cookies.delete(SESSION_COOKIE, { path: '/' });

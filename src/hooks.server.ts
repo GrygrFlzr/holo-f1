@@ -1,6 +1,6 @@
+import type { Handle } from '@sveltejs/kit';
 import { SESSION_COOKIE, verifySessionCookie } from '$lib/server/auth';
 import { createSession } from '$lib/server/db/session';
-import type { Handle } from '@sveltejs/kit';
 
 export const handle = (async ({ event, resolve }) => {
 	let dbSession: D1DatabaseSession | undefined;

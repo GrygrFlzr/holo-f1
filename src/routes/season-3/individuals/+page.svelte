@@ -1,6 +1,7 @@
 <script lang="ts">
-	import type { PageProps } from './$types';
 	import { asset } from '$app/paths';
+	import type { PageProps } from './$types';
+
 	let { data }: PageProps = $props();
 	const [individuals, teams] = $derived.by(() => {
 		let _individuals = $state(data.individuals);

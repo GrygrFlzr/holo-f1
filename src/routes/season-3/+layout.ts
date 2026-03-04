@@ -1,5 +1,5 @@
-import type { LayoutLoad } from './$types';
 import { asset } from '$app/paths';
+import type { LayoutLoad } from './$types';
 
 type Team = {
 	name: string;

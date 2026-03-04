@@ -1,16 +1,16 @@
 import { error, fail } from '@sveltejs/kit';
-import type { Actions, PageServerLoad } from './$types';
-import type { Weekend } from '$lib/server/db/weekends';
-import type { Driver } from '$lib/server/db/drivers';
-import type { Team } from '$lib/server/db/teams';
-import type { Submission } from '$lib/server/db/submissions';
-import { upsertSubmission, deleteSubmission } from '$lib/server/db/submissions';
-import { getOpenWeekendById, openWeekendStatement } from '$lib/server/db/weekends';
-import { allDriversStatement, validateDriverIds } from '$lib/server/db/drivers';
-import { allTeamsStatement, validateTeamId } from '$lib/server/db/teams';
-import { parseSubmissionForm } from '$lib/server/validation';
 import { getCached, setCache } from '$lib/server/db/cache';
+import type { Driver } from '$lib/server/db/drivers';
+import { allDriversStatement, validateDriverIds } from '$lib/server/db/drivers';
+import type { Submission } from '$lib/server/db/submissions';
+import { deleteSubmission, upsertSubmission } from '$lib/server/db/submissions';
+import type { Team } from '$lib/server/db/teams';
+import { allTeamsStatement, validateTeamId } from '$lib/server/db/teams';
 import { typedBatch } from '$lib/server/db/types';
+import type { Weekend } from '$lib/server/db/weekends';
+import { getOpenWeekendById, openWeekendStatement } from '$lib/server/db/weekends';
+import { parseSubmissionForm } from '$lib/server/validation';
+import type { Actions, PageServerLoad } from './$types';
 
 export const load = (async ({ locals }) => {
 	const db = locals.db;

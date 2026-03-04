@@ -1,6 +1,6 @@
 import { redirect } from '@sveltejs/kit';
-import type { RequestHandler } from './$types';
 import { env } from '$env/dynamic/private';
+import type { RequestHandler } from './$types';
 
 export const GET = (({ url, cookies }) => {
 	const state = crypto.randomUUID();

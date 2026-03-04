@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { SvelteDate } from 'svelte/reactivity';
+
 	let { lockTime }: { lockTime: string } = $props();
 
 	let now = new SvelteDate();

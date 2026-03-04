@@ -1,6 +1,6 @@
 import { error, redirect } from '@sveltejs/kit';
-import { createSessionCookie, SESSION_COOKIE } from '$lib/server/auth';
 import { env } from '$env/dynamic/private';
+import { createSessionCookie, SESSION_COOKIE } from '$lib/server/auth';
 import type { RequestHandler } from './$types';
 
 interface TokenResponse {

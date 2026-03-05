@@ -90,11 +90,13 @@ export async function verifySessionCookie(
 
 export async function requireRole(
 	locals: App.Locals,
-	db: D1Database,
 	minRole: 'steward' | 'admin'
 ): Promise<App.Locals['user'] & {}> {
 	const user = locals.user;
 	if (!user) error(401, 'Not authenticated');
+
+	const db = locals.db;
+	if (!db) error(500, 'Database not available');
 
 	const row = await db
 		.prepare('select role from users where discord_id = ?')

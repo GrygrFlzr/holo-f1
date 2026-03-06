@@ -2,7 +2,6 @@ import type { Handle, ResolveOptions } from '@sveltejs/kit';
 import { SESSION_COOKIE, verifySessionCookie } from '$lib/server/auth';
 import { createSession } from '$lib/server/db/session';
 
-export type MaybePromise<T> = T | Promise<T>;
 const preload = ((input) => {
 	switch (input.type) {
 		case 'font':

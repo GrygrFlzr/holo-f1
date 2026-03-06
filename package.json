@@ -19,6 +19,7 @@
 	"devDependencies": {
 		"@eslint/compat": "^2.0.2",
 		"@eslint/js": "^10.0.1",
+		"@fontsource/titillium-web": "^5.2.8",
 		"@ianvs/prettier-plugin-sort-imports": "^4.7.1",
 		"@sveltejs/adapter-cloudflare": "^7.2.8",
 		"@sveltejs/kit": "^2.53.4",

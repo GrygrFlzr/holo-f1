@@ -65,7 +65,7 @@
 		margin: 0;
 		padding: 0 2rem 8rem;
 		list-style-type: none;
-		font-size: 3rem;
+		font-size: 2.25rem;
 	}
 	.team-entry {
 		border-left: 2rem solid transparent;

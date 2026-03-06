@@ -135,7 +135,7 @@
 	.point-record-entry {
 		display: grid;
 		grid-template-columns: 1fr 1fr 4rem;
-		font-size: 1.5rem;
+		font-size: 1.25rem;
 		font-weight: 300;
 		border-width: 1px;
 		border-style: solid;

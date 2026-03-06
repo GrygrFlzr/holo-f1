@@ -66,7 +66,6 @@
 		margin: 10px auto;
 	}
 	table {
-		font-family: system-ui, sans-serif;
 		table-layout: fixed;
 		border-collapse: collapse;
 		width: 100%;

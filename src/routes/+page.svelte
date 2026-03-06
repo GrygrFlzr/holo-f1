@@ -35,8 +35,7 @@
 				<input class="button" type="submit" value="Log out" />
 			</form>
 		{:else}
-			<p>Hello!</p>
-			<p><a class="discord button" href={resolve('/auth/discord')}>Log in with Discord</a></p>
+			<a class="discord button" href={resolve('/auth/discord')}>Log in with Discord</a>
 		{/if}
 	</nav>
 	<p>The site is a little more barebones than we'd like, but definitely functional!</p>

@@ -28,18 +28,43 @@
 			</p>
 		{/if}
 
-		{#if !user}
-			<p>
-				<a class="discord button" href={resolve('/auth/discord')}>Log in with Discord</a> to submit your
-				predictions.
-			</p>
-		{:else if form?.error}
-			<p><output role="alert" form="save-{id}">{form.error}</output></p>
-		{:else if form?.success}
-			<p><output form="save-{id}">Predictions saved!</output></p>
-		{:else if form?.cleared}
-			<p><output form="clear-{id}">Predictions cleared.</output></p>
-		{/if}
+		<nav>
+			{#if !user}
+				<p>
+					<a class="discord button" href={resolve('/auth/discord')}>Log in with Discord</a> to submit
+					your predictions.
+				</p>
+			{:else}
+				{@const baseSize = 32}
+				{@const baseImage = user.avatar_hash
+					? `https://cdn.discordapp.com/avatars/${user.discord_id}/${user.avatar_hash}.webp`
+					: `https://cdn.discordapp.com/embed/avatars/${(BigInt(user.discord_id) >> 22n) % 6n}.png`}
+				<img
+					class="avatar"
+					alt="{user.display_name}'s Avatar"
+					srcset={[
+						[`${baseImage}?size=${baseSize * 1}`, '1x'],
+						[`${baseImage}?size=${baseSize * 2}`, '2x'],
+						[`${baseImage}?size=${baseSize * 3}`, '3x']
+					]
+						.map(([url, dpi]) => `${url} ${dpi}`)
+						.join(', ')}
+					src="{baseImage}?size=${baseSize}"
+				/>
+				<span class="user-name">{user.display_name}</span>
+				<span class="filler"></span>
+				<form method="post" action={resolve('/auth/logout')}>
+					<input class="button" type="submit" value="Log out" />
+				</form>
+				{#if form?.error}
+					<p><output role="alert" form="save-{id}">{form.error}</output></p>
+				{:else if form?.success}
+					<p><output form="save-{id}">Predictions saved!</output></p>
+				{:else if form?.cleared}
+					<p><output form="clear-{id}">Predictions cleared.</output></p>
+				{/if}
+			{/if}
+		</nav>
 
 		{@render predictionForm(!user)}
 	{/if}
@@ -148,6 +173,21 @@
 	main {
 		max-width: 80ch;
 		margin: 0 auto;
+	}
+	nav {
+		display: flex;
+		align-items: center;
+	}
+	.avatar {
+		width: 32px;
+		height: 32px;
+		border-radius: 50%;
+	}
+	.user-name {
+		margin-left: 0.5rem;
+	}
+	.filler {
+		flex-grow: 1;
 	}
 	.button {
 		padding: 0.5rem 1rem;

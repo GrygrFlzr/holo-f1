@@ -14,9 +14,9 @@
 	<nav>
 		{#if data.user}
 			{@const baseSize = 32}
-			{@const baseImage = `https://cdn.discordapp.com/avatars/${data.user.discord_id}/${
-				data.user.avatar_hash
-			}.webp`}
+			{@const baseImage = data.user.avatar_hash
+				? `https://cdn.discordapp.com/avatars/${data.user.discord_id}/${data.user.avatar_hash}.webp`
+				: `https://cdn.discordapp.com/embed/avatars/${(BigInt(data.user.discord_id) >> 22n) % 6n}.png`}
 			<img
 				class="avatar"
 				alt="{data.user.display_name}'s Avatar"

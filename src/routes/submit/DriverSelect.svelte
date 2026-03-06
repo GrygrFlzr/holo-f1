@@ -45,4 +45,7 @@
 		flex-direction: column;
 		row-gap: 0.25rem;
 	}
+	select {
+		padding: 0.25rem 0.5rem;
+	}
 </style>

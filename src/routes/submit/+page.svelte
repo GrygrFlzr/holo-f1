@@ -169,6 +169,11 @@
 		margin: 0 auto;
 	}
 
+	.fieldset-items select,
+	.fieldset-items textarea {
+		padding: 0.25rem 0.5rem;
+	}
+
 	output {
 		color: light-dark(#16a34a, #4ade80);
 	}
@@ -180,8 +185,12 @@
 	.inner-fieldset {
 		display: flex;
 		flex-direction: column;
-		row-gap: 0.5rem;
+		row-gap: 0.75rem;
 		border: 1px solid light-dark(oklch(14.5% 0 0), oklch(98.5% 0 0));
+		padding-bottom: 1rem;
+	}
+	.inner-fieldset + .inner-fieldset {
+		margin-top: 1rem;
 	}
 	.fieldset-items {
 		display: flex;

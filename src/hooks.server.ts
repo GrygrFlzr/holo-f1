@@ -1,6 +1,19 @@
-import type { Handle } from '@sveltejs/kit';
+import type { Handle, ResolveOptions } from '@sveltejs/kit';
 import { SESSION_COOKIE, verifySessionCookie } from '$lib/server/auth';
 import { createSession } from '$lib/server/db/session';
+
+export type MaybePromise<T> = T | Promise<T>;
+const preload = ((input) => {
+	switch (input.type) {
+		case 'font':
+		case 'css':
+		case 'js':
+			return true;
+		case 'asset':
+		default:
+			return false;
+	}
+}) satisfies ResolveOptions['preload'];
 
 export const handle = (async ({ event, resolve }) => {
 	let dbSession: D1DatabaseSession | undefined;
@@ -27,7 +40,7 @@ export const handle = (async ({ event, resolve }) => {
 		event.locals.db = dbSession;
 	}
 
-	const response = await resolve(event);
+	const response = await resolve(event, { preload });
 	if (dbSession) {
 		const bookmark = dbSession.getBookmark();
 		if (bookmark) {

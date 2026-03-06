@@ -20,6 +20,7 @@
 
 <svelte:head>
 	<link rel="canonical" href={canonicalUrl.href} />
+	<link rel="preconnect" href="https://cdn.discordapp.com" />
 </svelte:head>
 
 <div class="wrapper">

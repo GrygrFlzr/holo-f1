@@ -11,15 +11,34 @@
 </svelte:head>
 
 <main>
-	{#if data.user}
-		<p>Hello, {data.user.display_name}!</p>
-		<form method="post" action={resolve('/auth/logout')}>
-			<input type="submit" value="Log out" />
-		</form>
-	{:else}
-		<p>Hello!</p>
-		<p><a class="discord button" href={resolve('/auth/discord')}>Log in with Discord</a></p>
-	{/if}
+	<nav>
+		{#if data.user}
+			{@const baseSize = 32}
+			{@const baseImage = `https://cdn.discordapp.com/avatars/${data.user.discord_id}/${
+				data.user.avatar_hash
+			}.webp`}
+			<img
+				class="avatar"
+				alt="{data.user.display_name}'s Avatar"
+				srcset={[
+					[`${baseImage}?size=${baseSize * 1}`, '1x'],
+					[`${baseImage}?size=${baseSize * 2}`, '2x'],
+					[`${baseImage}?size=${baseSize * 3}`, '3x']
+				]
+					.map(([url, dpi]) => `${url} ${dpi}`)
+					.join(', ')}
+				src="{baseImage}?size=${baseSize}"
+			/>
+			<span class="user-name">{data.user.display_name}</span>
+			<span class="filler"></span>
+			<form method="post" action={resolve('/auth/logout')}>
+				<input class="button" type="submit" value="Log out" />
+			</form>
+		{:else}
+			<p>Hello!</p>
+			<p><a class="discord button" href={resolve('/auth/discord')}>Log in with Discord</a></p>
+		{/if}
+	</nav>
 	<p>The site is a little more barebones than we'd like, but definitely functional!</p>
 	<p>Things you can already do:</p>
 	<ul>
@@ -59,6 +78,21 @@
 	main {
 		max-width: 80ch;
 		margin: 2rem auto;
+	}
+	nav {
+		display: flex;
+		align-items: center;
+	}
+	.avatar {
+		width: 32px;
+		height: 32px;
+		border-radius: 50%;
+	}
+	.user-name {
+		margin-left: 0.5rem;
+	}
+	.filler {
+		flex-grow: 1;
 	}
 	.button {
 		padding: 0.5rem 1rem;

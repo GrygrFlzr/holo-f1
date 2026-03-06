@@ -25,19 +25,38 @@
 			<table>
 				<thead>
 					<tr>
-						<th>Name</th>
-						<th>Pole</th>
-						<th>P1</th>
-						<th>P2</th>
-						<th>P3</th>
-						<th>P10</th>
-						<th>DotD</th>
-						<th>Team</th>
+						<th scope="col"></th>
+						<th scope="col">Name</th>
+						<th scope="col">Pole</th>
+						<th scope="col">P1</th>
+						<th scope="col">P2</th>
+						<th scope="col">P3</th>
+						<th scope="col">P10</th>
+						<th scope="col">DotD</th>
+						<th scope="col">Team</th>
 					</tr>
 				</thead>
 				<tbody>
 					{#each data.entries as entry (entry.discord_id)}
+						{@const baseSize = 32}
+						{@const baseImage = `https://cdn.discordapp.com/avatars/${entry.discord_id}/${
+							entry.avatar_hash
+						}.webp`}
 						<tr>
+							<td>
+								<img
+									class="avatar"
+									alt="{entry.discord_name}'s Avatar"
+									srcset={[
+										[`${baseImage}?size=${baseSize * 1}`, '1x'],
+										[`${baseImage}?size=${baseSize * 2}`, '2x'],
+										[`${baseImage}?size=${baseSize * 3}`, '3x']
+									]
+										.map(([url, dpi]) => `${url} ${dpi}`)
+										.join(', ')}
+									src="{baseImage}?size=${baseSize}"
+								/>
+							</td>
 							<td>{entry.discord_name}</td>
 							<td>{entry.pole_code}</td>
 							<td>{entry.p1_code}</td>
@@ -45,17 +64,51 @@
 							<td>{entry.p3_code}</td>
 							<td>{entry.p10_code}</td>
 							<td>{entry.dotd_code}</td>
-							<td>{entry.team_name}</td>
+							<td style="--team-color: {entry.team_color};">
+								<span class="team-name">{entry.team_name}</span>
+							</td>
 						</tr>
 					{/each}
 				</tbody>
 			</table>
 		{:else}
-			<ul>
-				{#each data.entries as entry (entry.discord_id)}
-					<li>{entry.discord_name}</li>
-				{/each}
-			</ul>
+			<table>
+				<thead>
+					<tr>
+						<th scope="col" class="col-avatar"></th>
+						<th scope="col">Name</th>
+						<th scope="col">Team</th>
+					</tr>
+				</thead>
+				<tbody>
+					{#each data.entries as entry (entry.discord_id)}
+						{@const baseSize = 32}
+						{@const baseImage = `https://cdn.discordapp.com/avatars/${entry.discord_id}/${
+							entry.avatar_hash
+						}.webp`}
+						<tr>
+							<td class="col-avatar">
+								<img
+									class="avatar"
+									alt="{entry.discord_name}'s Avatar"
+									srcset={[
+										[`${baseImage}?size=${baseSize * 1}`, '1x'],
+										[`${baseImage}?size=${baseSize * 2}`, '2x'],
+										[`${baseImage}?size=${baseSize * 3}`, '3x']
+									]
+										.map(([url, dpi]) => `${url} ${dpi}`)
+										.join(', ')}
+									src="{baseImage}?size=${baseSize}"
+								/>
+							</td>
+							<td>{entry.discord_name}</td>
+							<td style="--team-color: {entry.team_color};">
+								<span class="team-name">{entry.team_name}</span>
+							</td>
+						</tr>
+					{/each}
+				</tbody>
+			</table>
 		{/if}
 	{/if}
 </main>
@@ -69,6 +122,32 @@
 		table-layout: fixed;
 		border-collapse: collapse;
 		width: 100%;
+	}
+	.avatar {
+		border-radius: 50%;
+		width: 32px;
+		height: 32px;
+		text-align: center;
+	}
+	.col-avatar {
+		width: 32px;
+	}
+	.team-name {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: center;
+		padding: 0.25rem 0.5rem;
+		border: 1px solid var(--team-color);
+		border-radius: 4px;
+	}
+	.team-name::before {
+		content: '';
+		border-radius: 50%;
+		height: 1rem;
+		width: 1rem;
+		background-color: var(--team-color);
+		margin-right: 0.25rem;
 	}
 
 	th,

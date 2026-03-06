@@ -39,9 +39,9 @@
 				<tbody>
 					{#each data.entries as entry (entry.discord_id)}
 						{@const baseSize = 32}
-						{@const baseImage = `https://cdn.discordapp.com/avatars/${entry.discord_id}/${
-							entry.avatar_hash
-						}.webp`}
+						{@const baseImage = entry.avatar_hash
+							? `https://cdn.discordapp.com/avatars/${entry.discord_id}/${entry.avatar_hash}.webp`
+							: `https://cdn.discordapp.com/embed/avatars/${(BigInt(entry.discord_id) >> 22n) % 6n}.png`}
 						<tr>
 							<td>
 								<img
@@ -83,9 +83,9 @@
 				<tbody>
 					{#each data.entries as entry (entry.discord_id)}
 						{@const baseSize = 32}
-						{@const baseImage = data.user.avatar_hash
-							? `https://cdn.discordapp.com/avatars/${data.user.discord_id}/${data.user.avatar_hash}.webp`
-							: `https://cdn.discordapp.com/embed/avatars/${(BigInt(data.user.discord_id) >> 22n) % 6n}.png`}
+						{@const baseImage = entry.avatar_hash
+							? `https://cdn.discordapp.com/avatars/${entry.discord_id}/${entry.avatar_hash}.webp`
+							: `https://cdn.discordapp.com/embed/avatars/${(BigInt(entry.discord_id) >> 22n) % 6n}.png`}
 						<tr>
 							<td class="col-avatar">
 								<img

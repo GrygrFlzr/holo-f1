@@ -47,5 +47,6 @@
 	}
 	select {
 		padding: 0.25rem 0.5rem;
+		font-family: inherit;
 	}
 </style>

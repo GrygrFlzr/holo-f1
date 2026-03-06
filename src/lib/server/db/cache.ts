@@ -7,7 +7,7 @@ let teams: Team[] | null = null;
 let expiry = 0;
 
 /** Time to Live in ms */
-const TTL = 3_600_000 as const; // 1 hour
+const TTL = 60_000 as const; // 1 minute
 
 export function getCached(): {
 	drivers: Driver[];
@@ -25,10 +25,4 @@ export function setCache(d: Driver[], t: Team[]): void {
 	drivers = d;
 	teams = t;
 	expiry = Date.now() + TTL;
-}
-
-export function invalidateCache() {
-	drivers = null;
-	teams = null;
-	expiry = 0;
 }

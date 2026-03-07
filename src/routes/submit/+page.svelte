@@ -1,12 +1,23 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { resolve } from '$app/paths';
+	import { SvelteDate } from 'svelte/reactivity';
 	import DriverSelect from './DriverSelect.svelte';
 	import LockTime from './LockTime.svelte';
 
 	let { data, form } = $props();
 	const { weekend, drivers, teams, submission, user } = $derived(data);
 	const id = $props.id();
+
+	const now = new SvelteDate();
+	$effect(() => {
+		const interval = setInterval(() => {
+			now.setTime(new Date().getTime());
+		}, 1_000);
+		return () => {
+			clearInterval(interval);
+		};
+	});
 </script>
 
 <svelte:head>
@@ -66,7 +77,41 @@
 			{/if}
 		</nav>
 
-		{@render predictionForm(!user)}
+		{#if new Date(weekend.lock_time).getTime() > now.getTime()}
+			{@render predictionForm(!user)}
+		{:else}
+			<p>Submission period has closed.</p>
+			{#if user}
+				{#if submission}
+					{@const { bold_prediction, team_id, ...restOfSubmission } = submission}
+					{@const team = teams.find(({ id }) => id === team_id)}
+					{#if team}
+						<p>
+							You are contributing points to <span class="team-name" style:--team-color={team.color}
+								>{team.name}</span
+							>
+						</p>
+					{/if}
+					<p>Your predictions were:</p>
+					<ul>
+						{#each Object.entries(restOfSubmission) as [key, value] (key)}
+							<li>
+								{key
+									.replace(/_driver_id$/, '')
+									.replaceAll(/_/g, ' ')
+									.toUpperCase()}: {drivers.find(({ id }) => id === value)?.name ??
+									'Unknown Driver'}
+							</li>
+						{/each}
+						{#if bold_prediction}
+							<li>Bold Prediction: {bold_prediction}</li>
+						{/if}
+					</ul>
+				{:else}
+					<p>You did not submit a prediction for this race weekend.</p>
+				{/if}
+			{/if}
+		{/if}
 	{/if}
 </main>
 
@@ -185,6 +230,11 @@
 	}
 	.user-name {
 		margin-left: 0.5rem;
+	}
+	.team-name {
+		border: 1px solid var(--team-color);
+		padding: 0 0.25rem;
+		border-radius: 4px;
 	}
 	.filler {
 		flex-grow: 1;

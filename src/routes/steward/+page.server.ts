@@ -28,17 +28,17 @@ export const load = (async ({ locals }) => {
 	const [weekendResult, entriesResult] = await typedBatch<[Weekend, StewardEntry]>(db, [
 		db.prepare(
 			`
-            select id, season, slug, name, lock_time, is_sprint, watchalong_host
+			select id, season, slug, name, lock_time, is_sprint, watchalong_host
 			from weekends
 			where scored = 0
 			order by lock_time asc
 			limit 1
-            `
+			`
 		),
 		db.prepare(
 			`
 			select
-                u.discord_id,
+				u.discord_id,
 				u.discord_name, u.avatar_hash
 				, pole.code as pole_code
 				, p1.code as p1_code
@@ -62,8 +62,8 @@ export const load = (async ({ locals }) => {
 			where s.weekend_id = (
 				select id from weekends where scored = 0 order by lock_time asc limit 1
 			)
-			order by u.discord_name asc
-            `
+			order by s.updated_at asc
+			`
 		)
 	]);
 

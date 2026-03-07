@@ -71,7 +71,7 @@ export const load = (async ({ locals }) => {
 	if (!weekend) {
 		return { weekend: null as Weekend | null, locked: false, entries: [] as StewardEntry[] };
 	}
-	const locked = new Date(weekend.lock_time + 'Z') <= new Date();
+	const locked = new Date(weekend.lock_time).getTime() <= new Date().getTime();
 
 	return {
 		weekend,

@@ -21,67 +21,28 @@
 
 		{#if data.entries.length === 0}
 			<p>No submissions yet.</p>
-		{:else if data.locked}
+		{:else}
 			<table>
 				<thead>
 					<tr>
 						<th scope="col"></th>
 						<th scope="col">Name</th>
-						<th scope="col">Pole</th>
-						<th scope="col">P1</th>
-						<th scope="col">P2</th>
-						<th scope="col">P3</th>
-						<th scope="col">P10</th>
-						<th scope="col">DotD</th>
+						<th scope="col">Submitted</th>
+						{#if data.locked}
+							<th scope="col">Pole</th>
+							<th scope="col">P1</th>
+							<th scope="col">P2</th>
+							<th scope="col">P3</th>
+							<th scope="col">P10</th>
+							<th scope="col">DotD</th>
+						{/if}
 						<th scope="col">Team</th>
 					</tr>
 				</thead>
 				<tbody>
 					{#each data.entries as entry (entry.discord_id)}
-						{@const baseSize = 32}
-						{@const baseImage = entry.avatar_hash
-							? `https://cdn.discordapp.com/avatars/${entry.discord_id}/${entry.avatar_hash}.webp`
-							: `https://cdn.discordapp.com/embed/avatars/${(BigInt(entry.discord_id) >> 22n) % 6n}.png`}
-						<tr>
-							<td>
-								<img
-									class="avatar"
-									alt="{entry.discord_name}'s Avatar"
-									srcset={[
-										[`${baseImage}?size=${baseSize * 1}`, '1x'],
-										[`${baseImage}?size=${baseSize * 2}`, '2x'],
-										[`${baseImage}?size=${baseSize * 3}`, '3x']
-									]
-										.map(([url, dpi]) => `${url} ${dpi}`)
-										.join(', ')}
-									src="{baseImage}?size=${baseSize}"
-								/>
-							</td>
-							<td>{entry.discord_name}</td>
-							<td>{entry.pole_code}</td>
-							<td>{entry.p1_code}</td>
-							<td>{entry.p2_code}</td>
-							<td>{entry.p3_code}</td>
-							<td>{entry.p10_code}</td>
-							<td>{entry.dotd_code}</td>
-							<td style="--team-color: {entry.team_color};">
-								<span class="team-name">{entry.team_name}</span>
-							</td>
-						</tr>
-					{/each}
-				</tbody>
-			</table>
-		{:else}
-			<table>
-				<thead>
-					<tr>
-						<th scope="col" class="col-avatar"></th>
-						<th scope="col">Name</th>
-						<th scope="col">Team</th>
-					</tr>
-				</thead>
-				<tbody>
-					{#each data.entries as entry (entry.discord_id)}
+						{@const submitTimeDeltaMs =
+							new Date(data.weekend.lock_time).getTime() - new Date(entry.updated_at).getTime()}
 						{@const baseSize = 32}
 						{@const baseImage = entry.avatar_hash
 							? `https://cdn.discordapp.com/avatars/${entry.discord_id}/${entry.avatar_hash}.webp`
@@ -102,6 +63,25 @@
 								/>
 							</td>
 							<td>{entry.discord_name}</td>
+							<td>
+								{#if submitTimeDeltaMs <= 0}
+									{Math.floor(submitTimeDeltaMs / -3_600_000)} hours, {Math.floor(
+										submitTimeDeltaMs / -60_000
+									) % 60} minutes overdue
+								{:else}
+									{Math.floor(submitTimeDeltaMs / 3_600_000)} hours, {Math.floor(
+										submitTimeDeltaMs / 60_000
+									) % 60} minutes before lock
+								{/if}
+							</td>
+							{#if data.locked}
+								<td>{entry.pole_code}</td>
+								<td>{entry.p1_code}</td>
+								<td>{entry.p2_code}</td>
+								<td>{entry.p3_code}</td>
+								<td>{entry.p10_code}</td>
+								<td>{entry.dotd_code}</td>
+							{/if}
 							<td style="--team-color: {entry.team_color};">
 								<span class="team-name">{entry.team_name}</span>
 							</td>

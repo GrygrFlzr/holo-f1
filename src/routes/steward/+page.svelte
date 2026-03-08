@@ -1,3 +1,16 @@
+<script lang="ts" module>
+	const sqliteTimePattern =
+		/^(?<year>\d{4})-(?<month>[01]\d)-(?<date>[0123]\d) (?<hour>[012]\d):(?<minute>[0-5]\d):(?<second>[0-5]\d)$/;
+
+	/*@__NO_SIDE_EFFECTS__*/
+	function parseSqliteDateTime(datetimeStr: string): Date | null {
+		const results = sqliteTimePattern.exec(datetimeStr);
+		if (!results || !results.groups) return null;
+		const { year, month, date, hour, minute, second } = results.groups;
+		return new Date(`${year}-${month}-${date}T${hour}:${minute}:${second}Z`);
+	}
+</script>
+
 <script lang="ts">
 	const { data } = $props();
 </script>
@@ -12,6 +25,7 @@
 	{#if !data.weekend}
 		<p>No unscored weekends</p>
 	{:else}
+		{@const weekendLockTime = new Date(data.weekend.lock_time).getTime()}
 		<h2>{data.weekend.name}</h2>
 		{#if data.locked}
 			<p>Locked - {data.entries.length} entries</p>
@@ -41,8 +55,10 @@
 				</thead>
 				<tbody>
 					{#each data.entries as entry (entry.discord_id)}
-						{@const submitTimeDeltaMs =
-							new Date(data.weekend.lock_time).getTime() - new Date(entry.updated_at).getTime()}
+						{@const updatedAtTime = parseSqliteDateTime(entry.updated_at)?.getTime() ?? NaN}
+						{@const submitTimeDeltaMs = isNaN(updatedAtTime)
+							? NaN
+							: weekendLockTime - updatedAtTime}
 						{@const baseSize = 32}
 						{@const baseImage = entry.avatar_hash
 							? `https://cdn.discordapp.com/avatars/${entry.discord_id}/${entry.avatar_hash}.webp`
@@ -64,7 +80,9 @@
 							</td>
 							<td>{entry.discord_name}</td>
 							<td>
-								{#if submitTimeDeltaMs <= 0}
+								{#if isNaN(submitTimeDeltaMs)}
+									Unable to parse time
+								{:else if submitTimeDeltaMs <= 0}
 									{Math.floor(submitTimeDeltaMs / -3_600_000)} hours, {Math.floor(
 										submitTimeDeltaMs / -60_000
 									) % 60} minutes overdue

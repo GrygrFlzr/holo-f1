@@ -5,6 +5,8 @@ import { createSession } from '$lib/server/db/session';
 const preload = ((input) => {
 	switch (input.type) {
 		case 'font':
+			// only preload default weight woff2
+			return input.path.includes('titillium-web-latin-400-normal') && input.path.endsWith('.woff2');
 		case 'css':
 		case 'js':
 			return true;

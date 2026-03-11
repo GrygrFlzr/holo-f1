@@ -5,17 +5,17 @@
 
 	let { children } = $props();
 
-	const canonicalUrl = $derived.by(() => {
-		let { url } = page;
+	const canonicalHref = $derived.by(() => {
+		const { url } = page;
 		url.protocol = 'https:';
 		url.host = 'f1.kfp.yt';
 		url.port = '443';
-		return url;
+		return url.href;
 	});
 </script>
 
 <svelte:head>
-	<link rel="canonical" href={canonicalUrl.href} />
+	<link rel="canonical" href={canonicalHref} />
 	<link rel="preconnect" href="https://cdn.discordapp.com" />
 </svelte:head>
 

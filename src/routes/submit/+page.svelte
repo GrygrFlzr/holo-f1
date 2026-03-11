@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { resolve } from '$app/paths';
+	import { parseDateTime } from '$lib/time';
 	import { SvelteDate } from 'svelte/reactivity';
 	import DriverSelect from './DriverSelect.svelte';
 	import LockTime from './LockTime.svelte';
@@ -10,6 +11,18 @@
 	const id = $props.id();
 
 	const now = new SvelteDate();
+	const parsedLockTime = $derived(parseDateTime(weekend.lock_time));
+	const remaining = $derived.by(() => {
+		if (parsedLockTime) {
+			const deadline = parsedLockTime.getTime();
+			if (!isNaN(deadline)) {
+				return deadline - now.getTime();
+			}
+		}
+		return null;
+	});
+	const locked = $derived(remaining ? remaining <= 0 : false);
+
 	$effect(() => {
 		const interval = setInterval(() => {
 			now.setTime(new Date().getTime());
@@ -77,7 +90,7 @@
 			{/if}
 		</nav>
 
-		{#if new Date(weekend.lock_time).getTime() > now.getTime()}
+		{#if locked}
 			{@render predictionForm(!user)}
 		{:else}
 			<p>Submission period has closed.</p>

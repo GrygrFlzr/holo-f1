@@ -1,18 +1,51 @@
-<script lang="ts" module>
-	const sqliteTimePattern =
-		/^(?<year>\d{4})-(?<month>[01]\d)-(?<date>[0123]\d) (?<hour>[012]\d):(?<minute>[0-5]\d):(?<second>[0-5]\d)$/;
-
-	/*@__NO_SIDE_EFFECTS__*/
-	function parseSqliteDateTime(datetimeStr: string): Date | null {
-		const results = sqliteTimePattern.exec(datetimeStr);
-		if (!results || !results.groups) return null;
-		const { year, month, date, hour, minute, second } = results.groups;
-		return new Date(`${year}-${month}-${date}T${hour}:${minute}:${second}Z`);
-	}
-</script>
-
 <script lang="ts">
+	import { parseDateTime } from '$lib/time.js';
+
+	type UnitValueTuple = [value: number, unit: string, divisor: number];
+
 	const { data } = $props();
+	const parsedLockTime = $derived.by(() => {
+		if (!data.weekend) return null;
+		return parseDateTime(data.weekend.lock_time);
+	});
+
+	function computeWeekendTimeDelta(submitTime: string) {
+		if (!parsedLockTime) return null;
+		const parsedSubmitTime = parseDateTime(submitTime);
+		if (!parsedSubmitTime) return null;
+		const delta = parsedLockTime.getTime() - parsedSubmitTime.getTime();
+		const isValid = delta > 0;
+		const deltaMs = Math.abs(delta);
+		const deltaSeconds = deltaMs / 1_000;
+		const deltaMinutes = deltaSeconds / 60;
+		const deltaHours = deltaMinutes / 60;
+		const deltaDays = deltaHours / 24;
+
+		// display the two largest units
+		const relativeTimeString = (
+			[
+				// [value, unit, mod]
+				[deltaDays, 'day', Infinity],
+				[deltaHours, 'hour', 24],
+				[deltaMinutes, 'minute', 60],
+				[deltaSeconds, 'second', 60]
+			] as UnitValueTuple[]
+		)
+			// eslint-disable-next-line @typescript-eslint/no-unused-vars
+			.filter(([value, _, mod]) => {
+				const modValue = Math.floor(value) % mod;
+				return modValue > 0;
+			})
+			.map(([value, unit, mod]) => {
+				const modValue = Math.floor(value) % mod;
+				const formattedUnit = modValue === 1 ? unit : `${unit}s`;
+				return `${modValue} ${formattedUnit}`;
+			})
+			.slice(0, 2)
+			.join(' and ');
+
+		return isValid ? `${relativeTimeString} before lock` : `${relativeTimeString} overdue`;
+	}
 </script>
 
 <svelte:head>
@@ -25,7 +58,6 @@
 	{#if !data.weekend}
 		<p>No unscored weekends</p>
 	{:else}
-		{@const weekendLockTime = new Date(data.weekend.lock_time).getTime()}
 		<h2>{data.weekend.name}</h2>
 		{#if data.locked}
 			<p>Locked - {data.entries.length} entries</p>
@@ -55,10 +87,7 @@
 				</thead>
 				<tbody>
 					{#each data.entries as entry (entry.discord_id)}
-						{@const updatedAtTime = parseSqliteDateTime(entry.updated_at)?.getTime() ?? NaN}
-						{@const submitTimeDeltaMs = isNaN(updatedAtTime)
-							? NaN
-							: weekendLockTime - updatedAtTime}
+						{@const submitTimeDelta = computeWeekendTimeDelta(entry.updated_at)}
 						{@const baseSize = 32}
 						{@const baseImage = entry.avatar_hash
 							? `https://cdn.discordapp.com/avatars/${entry.discord_id}/${entry.avatar_hash}.webp`
@@ -79,19 +108,7 @@
 								/>
 							</td>
 							<td>{entry.discord_name}</td>
-							<td>
-								{#if isNaN(submitTimeDeltaMs)}
-									Unable to parse time
-								{:else if submitTimeDeltaMs <= 0}
-									{Math.floor(submitTimeDeltaMs / -3_600_000)} hours, {Math.floor(
-										submitTimeDeltaMs / -60_000
-									) % 60} minutes overdue
-								{:else}
-									{Math.floor(submitTimeDeltaMs / 3_600_000)} hours, {Math.floor(
-										submitTimeDeltaMs / 60_000
-									) % 60} minutes before lock
-								{/if}
-							</td>
+							<td>{submitTimeDelta ? submitTimeDelta : 'Unable to parse time'}</td>
 							{#if data.locked}
 								<td>{entry.pole_code}</td>
 								<td>{entry.p1_code}</td>

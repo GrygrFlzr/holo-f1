@@ -2,6 +2,7 @@ import { error } from '@sveltejs/kit';
 import { requireRole } from '$lib/server/auth';
 import { typedBatch } from '$lib/server/db/types';
 import type { Weekend } from '$lib/server/db/weekends';
+import { parseDateTime } from '$lib/time';
 import type { PageServerLoad } from './$types';
 
 interface StewardEntry {
@@ -71,7 +72,17 @@ export const load = (async ({ locals }) => {
 	if (!weekend) {
 		return { weekend: null as Weekend | null, locked: false, entries: [] as StewardEntry[] };
 	}
-	const locked = new Date(weekend.lock_time).getTime() <= new Date().getTime();
+	const locked = (() => {
+		const parsedLockTime = parseDateTime(weekend.lock_time);
+		if (parsedLockTime) {
+			const lockTime = parsedLockTime.getTime();
+			if (!isNaN(lockTime)) {
+				return lockTime <= new Date().getTime();
+			}
+		}
+
+		return false;
+	})();
 
 	return {
 		weekend,

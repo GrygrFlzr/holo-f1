@@ -26,6 +26,7 @@ export const load = (async ({ locals }) => {
 			s.pole_driver_id, s.p1_driver_id, s.p2_driver_id
 			, s.p3_driver_id, s.p10_driver_id, s.dotd_driver_id
 			, s.bold_prediction, s.team_id
+			, s.sprint_pole_driver_id, s.sprint_p1_driver_id
 		from submissions s
 		join weekends w on s.weekend_id = w.id
 		where s.user_id = ?
@@ -106,13 +107,20 @@ export const actions = {
 		const weekend = await getOpenWeekendById(db, weekendId);
 		if (!weekend) return fail(400, { error: 'Weekend is locked or does not exist.' });
 
-		const parsed = parseSubmissionForm(formData);
+		const parsed = parseSubmissionForm(formData, !!weekend.is_sprint);
 		if (!parsed.ok) return fail(400, { error: parsed.error });
 
 		const { drivers, teamId, boldPrediction } = parsed.data;
-		const allDriverIds = Object.values(drivers);
+		const { sprint_pole_driver_id, sprint_p1_driver_id, ...restOfDrivers } = drivers;
+		const raceDriverIds = Object.values(restOfDrivers);
+		if (weekend.is_sprint) {
+			if (sprint_pole_driver_id === null || sprint_p1_driver_id === null) {
+				return fail(400, { error: 'Sprint predictions are required for sprint weekends.' });
+			}
+			raceDriverIds.push(sprint_pole_driver_id, sprint_p1_driver_id);
+		}
 		const [driversValid, teamValid] = await Promise.all([
-			validateDriverIds(db, allDriverIds),
+			validateDriverIds(db, raceDriverIds),
 			validateTeamId(db, teamId)
 		]);
 

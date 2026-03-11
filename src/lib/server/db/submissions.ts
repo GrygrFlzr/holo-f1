@@ -1,6 +1,8 @@
 import type { D1Queryable } from '$lib/server/db/types';
 
 export interface Submission {
+	sprint_pole_driver_id: number | null;
+	sprint_p1_driver_id: number | null;
 	pole_driver_id: number | null;
 	p1_driver_id: number | null;
 	p2_driver_id: number | null;
@@ -22,6 +24,7 @@ export async function getSubmission(
 			select
 				pole_driver_id, p1_driver_id, p2_driver_id, p3_driver_id, p10_driver_id
 				, dotd_driver_id, bold_prediction, team_id
+				, sprint_pole_driver_id, sprint_p1_driver_id
 			from submissions
 			where user_id = ?1
 				and weekend_id = ?2
@@ -32,6 +35,8 @@ export async function getSubmission(
 }
 
 export interface SubmissionInput {
+	sprint_pole_driver_id: number | null;
+	sprint_p1_driver_id: number | null;
 	pole_driver_id: number;
 	p1_driver_id: number;
 	p2_driver_id: number;
@@ -55,11 +60,15 @@ export async function upsertSubmission(
 			insert into submissions (
 				user_id, weekend_id, pole_driver_id, p1_driver_id, p2_driver_id, p3_driver_id
 				, p10_driver_id, dotd_driver_id, bold_prediction, team_id
+				, sprint_pole_driver_id, sprint_p1_driver_id
 			) values (
 				?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10
+				, ?11, ?12
 			) on conflict (
 				user_id, weekend_id
 			) do update set
+			 	sprint_pole_driver_id = excluded.sprint_pole_driver_id,
+			 	sprint_p1_driver_id = excluded.sprint_p1_driver_id,
 				pole_driver_id = excluded.pole_driver_id,
 				p1_driver_id = excluded.p1_driver_id,
 				p2_driver_id = excluded.p2_driver_id,
@@ -81,7 +90,9 @@ export async function upsertSubmission(
 			input.p10_driver_id,
 			input.dotd_driver_id,
 			input.bold_prediction,
-			input.team_id
+			input.team_id,
+			input.sprint_pole_driver_id,
+			input.sprint_p1_driver_id
 		)
 		.run();
 }

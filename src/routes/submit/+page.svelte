@@ -80,18 +80,19 @@
 				<form method="post" action={resolve('/auth/logout')}>
 					<input class="button" type="submit" value="Log out" />
 				</form>
-				{#if form?.error}
-					<p><output role="alert" form="save-{id}">{form.error}</output></p>
-				{:else if form?.success}
-					<p><output form="save-{id}">Predictions saved!</output></p>
-				{:else if form?.cleared}
-					<p><output form="clear-{id}">Predictions cleared.</output></p>
-				{/if}
 			{/if}
 		</nav>
 
-		{#if locked}
+		{#if !locked}
 			{@render predictionForm(!user)}
+
+			{#if form?.error}
+				<p><output role="alert" form="save-{id}">{form.error}</output></p>
+			{:else if form?.success}
+				<p><output form="save-{id}">Predictions saved!</output></p>
+			{:else if form?.cleared}
+				<p><output form="clear-{id}">Predictions cleared.</output></p>
+			{/if}
 		{:else}
 			<p>Submission period has closed.</p>
 			{#if user}
@@ -142,8 +143,25 @@
 			}}
 		>
 			<input type="hidden" name="weekend_id" value={weekend.id} />
+			{#if weekend.is_sprint}
+				<fieldset class="inner-fieldset">
+					<legend>Sprint Predictions</legend>
+					<DriverSelect
+						name="sprint_pole_driver_id"
+						label="Sprint Pole Position"
+						selectedId={submission?.sprint_pole_driver_id}
+						{drivers}
+					/>
+					<DriverSelect
+						name="sprint_p1_driver_id"
+						label="Sprint Winner"
+						selectedId={submission?.sprint_p1_driver_id}
+						{drivers}
+					/>
+				</fieldset>
+			{/if}
 			<fieldset class="inner-fieldset">
-				<legend>Driver Predictions</legend>
+				<legend>Race Predictions</legend>
 				<DriverSelect
 					name="pole_driver_id"
 					label="Pole Position"

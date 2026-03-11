@@ -42,7 +42,7 @@
 	<p>Things you can already do:</p>
 	<ul>
 		<li>
-			<a href={resolve('/submit')}>Submit a prediction for the Australian GP</a>
+			<a href={resolve('/submit')}>Submit a prediction for the Chinese GP</a>
 		</li>
 		<li>
 			Check the Season 3 archives:
@@ -65,6 +65,7 @@
 	<p>Things you will (hopefully) be able to do by next week:</p>
 	<ul>
 		<li>View rankings</li>
+		<li>View past predictions</li>
 		<li>Not get an eyesore</li>
 	</ul>
 </main>

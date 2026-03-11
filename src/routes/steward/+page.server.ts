@@ -27,6 +27,7 @@ export const load = (async ({ locals }) => {
 	await requireRole(locals, 'steward');
 
 	const [weekendResult, entriesResult] = await typedBatch<[Weekend, StewardEntry]>(db, [
+		// TODO: Support all incomplete weekends
 		db.prepare(
 			`
 			select id, season, slug, name, lock_time, is_sprint, watchalong_host

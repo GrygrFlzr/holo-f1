@@ -3,8 +3,12 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
 	plugins: [sveltekit()],
-	server: {
-		allowedHosts: ['localhost']
+	oxc: {
+		// we don't use JSX, so skip
+		jsx: 'preserve'
+	},
+	worker: {
+		format: 'es'
 	},
 	build: {
 		reportCompressedSize: false,
@@ -12,14 +16,10 @@ export default defineConfig({
 		modulePreload: {
 			polyfill: false
 		},
-		minify: 'terser',
-		cssMinify: 'lightningcss',
-		terserOptions: {
-			ecma: 2020,
-			sourceMap: false,
-			module: true,
-			format: {
-				semicolons: false
+		rolldownOptions: {
+			output: {
+				comments: false,
+				minify: true
 			}
 		}
 	}

@@ -3,6 +3,31 @@
 	import type { PageProps } from './$types';
 
 	const { data }: PageProps = $props();
+	const actual = {
+		pole: 'RUS',
+		p1: 'RUS',
+		p2: 'ANT',
+		p3: 'LEC',
+		p10: 'GAS',
+		dotd: 'VER'
+	};
+	const teamMap = $derived(new Map(data.teams.map((row) => [row.id, row])));
+	const driverMap = $derived(new Map(data.drivers.map((row) => [row.id, row])));
+	const sortedSubmissions = $derived(
+		data.submissions
+			.map((s) => ({
+				...s,
+				score: [
+					actual.pole === driverMap.get(s.pole)!.code,
+					actual.p1 === driverMap.get(s.p1)!.code,
+					actual.p2 === driverMap.get(s.p2)!.code,
+					actual.p3 === driverMap.get(s.p3)!.code,
+					actual.p10 === driverMap.get(s.p10)!.code,
+					actual.dotd === driverMap.get(s.dotd)!.code
+				].reduce((prev, currBool) => prev + (currBool ? 1 : 0), 0)
+			}))
+			.sort((a, b) => b.score - a.score)
+	);
 </script>
 
 <svelte:head>
@@ -69,6 +94,63 @@
 		<li>Not get an eyesore</li>
 	</ul>
 </main>
+
+<aside>
+	<p>
+		bold predictions still in scoring but at least you can see the definitely scored prediction
+		points
+	</p>
+	<table>
+		<thead>
+			<tr>
+				<td colspan={3}>Materialized Australia GP Results*</td>
+				<td>{actual.pole}</td>
+				<td>{actual.p1}</td>
+				<td>{actual.p2}</td>
+				<td>{actual.p3}</td>
+				<td>{actual.p10}</td>
+				<td>{actual.dotd}</td>
+			</tr>
+			<tr>
+				<th scope="col">Submitter</th>
+				<th scope="col">Team</th>
+				<th scope="col">Score</th>
+				<th scope="col">Pole</th>
+				<th scope="col">P1</th>
+				<th scope="col">P2</th>
+				<th scope="col">P3</th>
+				<th scope="col">P10</th>
+				<th scope="col">DotD</th>
+			</tr>
+		</thead>
+		<tbody>
+			{#each sortedSubmissions as s (s.username)}
+				{@const team = teamMap.get(s.team)!}
+				<tr>
+					<td>{s.username}</td>
+					<td>
+						<span style:--team-color={team.color}>{team.name}</span>
+					</td>
+					<td>{s.score}</td>
+					{#snippet driverCell(id: number, actualCode: string)}
+						{@const driver = driverMap.get(id)!}
+						{#if driver.code === actualCode}
+							<td>&check;</td>
+						{:else}
+							<td>{driver.code}</td>
+						{/if}
+					{/snippet}
+					{@render driverCell(s.pole, actual.pole)}
+					{@render driverCell(s.p1, actual.p1)}
+					{@render driverCell(s.p2, actual.p2)}
+					{@render driverCell(s.p3, actual.p3)}
+					{@render driverCell(s.p10, actual.p10)}
+					{@render driverCell(s.dotd, actual.dotd)}
+				</tr>
+			{/each}
+		</tbody>
+	</table>
+</aside>
 
 <style>
 	:root {

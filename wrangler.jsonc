@@ -6,7 +6,7 @@
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "holo-f1",
 	"pages_build_output_dir": ".svelte-kit/cloudflare",
-	"compatibility_date": "2026-03-26",
+	"compatibility_date": "2026-03-14",
 	"compatibility_flags": ["nodejs_als"],
 	"observability": {
 		"enabled": true

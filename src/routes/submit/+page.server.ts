@@ -30,7 +30,7 @@ export const load = (async ({ locals }) => {
 		from submissions s
 		join weekends w on s.weekend_id = w.id
 		where s.user_id = ?
-			and w.lock_time > datetime('now')
+			and w.lock_time > datetime('now', '-3 days')
 			and w.scored = 0
 		order by w.lock_time asc
 		limit 1

@@ -20,7 +20,7 @@ export function openWeekendStatement(db: D1Queryable): D1PreparedStatement {
 		`
 		select id, season, slug, name, lock_time, is_sprint, watchalong_host
 		from weekends
-		where lock_time > datetime('now')
+		where lock_time > datetime('now', '-3 days')
 			and scored = 0
 		order by lock_time asc
 		limit 1

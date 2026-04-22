@@ -11,6 +11,7 @@
 	const id = $props.id();
 
 	const now = new SvelteDate();
+	let visibilityState: DocumentVisibilityState = $state('visible');
 	const parsedLockTime = $derived(parseDateTime(weekend.lock_time));
 	const remaining = $derived.by(() => {
 		if (parsedLockTime) {
@@ -24,14 +25,16 @@
 	const locked = $derived(remaining ? remaining <= 0 : false);
 
 	$effect(() => {
-		const interval = setInterval(() => {
-			now.setTime(new Date().getTime());
-		}, 1_000);
+		if (visibilityState !== 'visible') return;
+		now.setTime(Date.now());
+		const interval = setInterval(() => now.setTime(Date.now()), 1_000);
 		return () => {
 			clearInterval(interval);
 		};
 	});
 </script>
+
+<svelte:document bind:visibilityState />
 
 <svelte:head>
 	<title>{weekend ? `Submit — ${weekend.name}` : 'Submissions Closed'} | Holo-F1</title>

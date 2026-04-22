@@ -1,11 +1,12 @@
 <script lang="ts">
+	import { browser } from '$app/environment';
 	import { parseDateTime } from '$lib/time';
 	import { SvelteDate } from 'svelte/reactivity';
 
 	let { lockTime }: { lockTime: string } = $props();
 
-	let now = new SvelteDate();
-	let mounted = $state.raw(false);
+	const now = new SvelteDate();
+	let visibilityState: DocumentVisibilityState = $state('visible');
 
 	const parsedLockTime = $derived(parseDateTime(lockTime));
 	const remaining = $derived.by(() => {
@@ -20,7 +21,7 @@
 	const locked = $derived(remaining ? remaining <= 0 : false);
 
 	const localString = $derived(
-		mounted && parsedLockTime
+		browser && parsedLockTime
 			? parsedLockTime.toLocaleString(undefined, {
 					weekday: 'long',
 					year: 'numeric',
@@ -47,17 +48,20 @@
 	});
 
 	$effect(() => {
-		mounted = true;
-		const interval = setInterval(() => {
-			now.setTime(Date.now());
-		}, 60_000);
-		return () => clearInterval(interval);
+		if (visibilityState !== 'visible') return;
+		now.setTime(Date.now());
+		const interval = setInterval(() => now.setTime(Date.now()), 60_000);
+		return () => {
+			clearInterval(interval);
+		};
 	});
 </script>
 
+<svelte:document bind:visibilityState />
+
 <time datetime={lockTime}>
 	{localString}
-	{#if mounted}
+	{#if browser}
 		<span>({relativeString})</span>
 	{/if}
 </time>

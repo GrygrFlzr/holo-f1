@@ -22,28 +22,21 @@
 		"@fontsource/titillium-web": "^5.2.8",
 		"@ianvs/prettier-plugin-sort-imports": "^4.7.1",
 		"@sveltejs/adapter-cloudflare": "^7.2.8",
-		"@sveltejs/kit": "^2.57.1",
+		"@sveltejs/kit": "^2.58.0",
 		"@sveltejs/vite-plugin-svelte": "^7.0.0",
-		"@types/node": "~22.16",
+		"@types/node": "~22.16.5",
 		"eslint": "^10.2.1",
 		"eslint-config-prettier": "^10.1.8",
-		"eslint-plugin-svelte": "^3.17.0",
+		"eslint-plugin-svelte": "^3.17.1",
 		"globals": "^17.5.0",
 		"prettier": "^3.8.3",
 		"prettier-plugin-svelte": "^3.5.1",
-		"svelte": "^5.55.4",
+		"svelte": "^5.55.5",
 		"svelte-check": "^4.4.6",
 		"typescript": "^6.0.3",
 		"typescript-eslint": "^8.59.0",
-		"vite": "^8.0.9",
-		"wrangler": "^4.84.1"
-	},
-	"pnpm": {
-		"updateConfig": {
-			"ignoreDependencies": [
-				"@types/node"
-			]
-		}
+		"vite": "^8.0.10",
+		"wrangler": "^4.85.0"
 	},
 	"engines": {
 		"node": "~22.16"

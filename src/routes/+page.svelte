@@ -63,11 +63,9 @@
 			<a class="discord button" href={resolve('/auth/discord')}>Log in with Discord</a>
 		{/if}
 	</nav>
-	<p>The site is a little more barebones than we'd like, but definitely functional!</p>
-	<p>Things you can already do:</p>
 	<ul>
 		<li>
-			<a href={resolve('/submit')}>Submit a prediction for the Japanese GP</a>
+			<a href={resolve('/submit')}>Submit a prediction for the Miami GP</a>
 		</li>
 		<li>
 			Check the Season 3 archives:
@@ -87,7 +85,7 @@
 			</ul>
 		</li>
 	</ul>
-	<p>Things you will (hopefully) be able to do by <del>next week</del> soon&trade;</p>
+	<p>Things you will (hopefully) be able to do soon&trade;</p>
 	<ul>
 		<li>View rankings</li>
 		<li>View past predictions</li>

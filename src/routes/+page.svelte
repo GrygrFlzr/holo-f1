@@ -65,7 +65,7 @@
 	</nav>
 	<ul>
 		<li>
-			<a href={resolve('/submit')}>Submit a prediction for the Miami GP</a>
+			<a href={resolve('/submit')}>Submit a prediction for the Canadian GP</a>
 		</li>
 		<li>
 			Check the Season 3 archives:

@@ -1,5 +1,5 @@
 import { redirect } from '@sveltejs/kit';
-import { env } from '$env/dynamic/private';
+import { DISCORD_CLIENT_ID } from '$app/env/private';
 import type { RequestHandler } from './$types';
 
 export const GET = (({ url, cookies }) => {
@@ -13,7 +13,7 @@ export const GET = (({ url, cookies }) => {
 	});
 
 	const params = new URLSearchParams({
-		client_id: env.DISCORD_CLIENT_ID,
+		client_id: DISCORD_CLIENT_ID,
 		redirect_uri: `${url.origin}/auth/callback`,
 		response_type: 'code',
 		scope: 'identify',

@@ -1,5 +1,5 @@
 import { error, redirect } from '@sveltejs/kit';
-import { env } from '$env/dynamic/private';
+import { AUTH_SECRET, DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET } from '$app/env/private';
 import { createSessionCookie, SESSION_COOKIE } from '$lib/server/auth';
 import type { RequestHandler } from './$types';
 
@@ -35,8 +35,8 @@ export const GET = (async ({ url, locals, cookies }) => {
 			'Content-Type': 'application/x-www-form-urlencoded'
 		},
 		body: new URLSearchParams({
-			client_id: env.DISCORD_CLIENT_ID,
-			client_secret: env.DISCORD_CLIENT_SECRET,
+			client_id: DISCORD_CLIENT_ID,
+			client_secret: DISCORD_CLIENT_SECRET,
 			grant_type: 'authorization_code',
 			code,
 			redirect_uri: `${url.origin}/auth/callback`
@@ -82,7 +82,7 @@ export const GET = (async ({ url, locals, cookies }) => {
 			avatar: discordUser.avatar,
 			role: (row?.role ?? 'user') as 'user' | 'steward' | 'admin'
 		},
-		env.AUTH_SECRET
+		AUTH_SECRET
 	);
 	cookies.set(SESSION_COOKIE, session, {
 		httpOnly: true,

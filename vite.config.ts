@@ -21,6 +21,9 @@ export default defineConfig({
 				name: execSync('git rev-parse HEAD').toString().trim(),
 				pollInterval: 0 // TODO: Implement UI for refreshing on update
 			},
+			experimental: {
+				explicitEnvironmentVariables: true
+			},
 			compilerOptions: {
 				modernAst: true,
 				runes: true

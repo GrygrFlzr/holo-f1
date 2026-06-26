@@ -1,8 +1,32 @@
+import { execSync } from 'node:child_process';
+import adapter from '@sveltejs/adapter-cloudflare';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-	plugins: [sveltekit()],
+	plugins: [
+		sveltekit({
+			adapter: adapter({
+				platformProxy: {
+					configPath: 'wrangler.jsonc',
+					persist: {
+						path: '.wrangler/state/v3'
+					}
+				}
+			}),
+			prerender: {
+				origin: 'https://f1.kfp.yt'
+			},
+			version: {
+				name: execSync('git rev-parse HEAD').toString().trim(),
+				pollInterval: 0 // TODO: Implement UI for refreshing on update
+			},
+			compilerOptions: {
+				modernAst: true,
+				runes: true
+			}
+		})
+	],
 	oxc: {
 		// we don't use JSX, so skip
 		jsx: 'preserve'

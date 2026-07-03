@@ -4,6 +4,12 @@ allowBuilds:
   esbuild: true
   sharp: true
   workerd: true
+minimumReleaseAgeExclude:
+  - '@sveltejs/kit@2.69.1'
+# pnpm-workspace.yaml
+overrides:
+  # GHSA-pxg6-pf52-xh8x — delete once @sveltejs/kit@3 ships its own cookie >=1
+  '@sveltejs/kit@2>cookie': '^0.7.0'
 updateConfig:
   ignoreDependencies:
     - '@types/node'

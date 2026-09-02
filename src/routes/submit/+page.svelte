@@ -62,10 +62,12 @@
 					your predictions.
 				</p>
 			{:else}
-				{@const baseSize = 32}
-				{@const baseImage = user.avatar_hash
-					? `https://cdn.discordapp.com/avatars/${user.discord_id}/${user.avatar_hash}.webp`
-					: `https://cdn.discordapp.com/embed/avatars/${(BigInt(user.discord_id) >> 22n) % 6n}.png`}
+				{const baseSize = 32}
+				{const baseImage = $derived(
+					user.avatar_hash
+						? `https://cdn.discordapp.com/avatars/${user.discord_id}/${user.avatar_hash}.webp`
+						: `https://cdn.discordapp.com/embed/avatars/${(BigInt(user.discord_id) >> 22n) % 6n}.png`
+				)}
 				<img
 					class="avatar"
 					alt="{user.display_name}'s Avatar"
@@ -100,8 +102,8 @@
 			<p>Submission period has closed.</p>
 			{#if user}
 				{#if submission}
-					{@const { bold_prediction, team_id, ...restOfSubmission } = submission}
-					{@const team = teams.find(({ id }) => id === team_id)}
+					{const { bold_prediction, team_id, ...restOfSubmission } = $derived(submission)}
+					{const team = $derived(teams.find(({ id }) => id === team_id))}
 					{#if team}
 						<p>
 							You are contributing points to <span class="team-name" style:--team-color={team.color}

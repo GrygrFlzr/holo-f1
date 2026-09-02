@@ -38,10 +38,12 @@
 <main>
 	<nav>
 		{#if data.user}
-			{@const baseSize = 32}
-			{@const baseImage = data.user.avatar_hash
-				? `https://cdn.discordapp.com/avatars/${data.user.discord_id}/${data.user.avatar_hash}.webp`
-				: `https://cdn.discordapp.com/embed/avatars/${(BigInt(data.user.discord_id) >> 22n) % 6n}.png`}
+			{const baseImage = $derived(
+				data.user.avatar_hash
+					? `https://cdn.discordapp.com/avatars/${data.user.discord_id}/${data.user.avatar_hash}.webp`
+					: `https://cdn.discordapp.com/embed/avatars/${(BigInt(data.user.discord_id) >> 22n) % 6n}.png`
+			)}
+			{const baseSize = 32}
 			<img
 				class="avatar"
 				alt="{data.user.display_name}'s Avatar"
@@ -123,7 +125,7 @@
 		</thead>
 		<tbody>
 			{#each sortedSubmissions as s (s.username)}
-				{@const team = teamMap.get(s.team)!}
+				{const team = $derived(teamMap.get(s.team)!)}
 				<tr>
 					<td>{s.username}</td>
 					<td>
@@ -131,7 +133,7 @@
 					</td>
 					<td>{s.score}</td>
 					{#snippet driverCell(id: number, actualCode: string)}
-						{@const driver = driverMap.get(id)!}
+						{const driver = $derived(driverMap.get(id)!)}
 						{#if driver.code === actualCode}
 							<td>&check;</td>
 						{:else}

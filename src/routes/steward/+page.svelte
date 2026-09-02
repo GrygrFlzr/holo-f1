@@ -76,7 +76,9 @@
 {/snippet}
 
 {#snippet resultReadout(field: ResultField)}
-	{@const driver = data.drivers.find((candidate) => candidate.id === data.result?.[field.name])}
+	{const driver = $derived(
+		data.drivers.find((candidate) => candidate.id === data.result?.[field.name])
+	)}
 
 	<div class="result-field">
 		<dt>{field.label}</dt>
@@ -184,7 +186,7 @@
 
 						<tbody>
 							{#each data.entries as entry (entry.discord_id)}
-								{@const baseImage = avatarBase(entry)}
+								{const baseImage = $derived(avatarBase(entry))}
 
 								<tr>
 									<td class="avatar-cell">

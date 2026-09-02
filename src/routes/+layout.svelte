@@ -24,6 +24,16 @@
 </div>
 
 <style>
+	:global(html) {
+		min-height: 100%;
+		background: #15151d;
+	}
+
+	:global(body) {
+		min-height: 100vh;
+		margin: 0;
+		background: inherit;
+	}
 	.wrapper {
 		display: contents;
 		font-family:

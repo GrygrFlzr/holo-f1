@@ -70,6 +70,9 @@
 			<a href={resolve('/submit')}>Submit a prediction for the British GP</a>
 		</li>
 		<li>
+			<a href={resolve('/season-4/individuals')}>View Season 4 standings</a>
+		</li>
+		<li>
 			Check the Season 3 archives:
 			<ul>
 				<li>

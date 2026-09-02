@@ -157,7 +157,7 @@ export async function getSeasonStandings(
 			order by
 				w.lock_time asc,
 				w.id asc,
-				u.display_name asc,
+				u.discord_name asc,
 				s.user_id asc
 			`
 		)

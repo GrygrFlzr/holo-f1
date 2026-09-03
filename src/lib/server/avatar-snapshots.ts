@@ -10,7 +10,9 @@ export interface AvatarImage {
 }
 
 export interface AvatarSnapshotPutOptions {
-	onlyIf: Headers;
+	onlyIf: {
+		etagDoesNotMatch: '*';
+	};
 	httpMetadata: {
 		contentType: typeof AVATAR_CONTENT_TYPE;
 		cacheControl: typeof AVATAR_CACHE_CONTROL;
@@ -28,6 +30,38 @@ export interface AvatarSnapshotStorageResult {
 	variantKey: string;
 	sourceWasCreated: boolean;
 	variantWasCreated: boolean;
+}
+
+const DISCORD_AVATAR_SOURCE_SIZE = 512;
+const DISCORD_AVATAR_VARIANT_SIZE = 128;
+
+export const DISCORD_AVATAR_MAXIMUM_BYTES = 2 * 1024 * 1024;
+
+type DiscordAvatarSize = typeof DISCORD_AVATAR_SOURCE_SIZE | typeof DISCORD_AVATAR_VARIANT_SIZE;
+
+export type AvatarSnapshotFetch = (url: string) => Promise<Response>;
+
+export interface CaptureDiscordAvatarSnapshotOptions {
+	bucket: AvatarSnapshotBucket;
+	discordId: string;
+	avatarHash: string;
+	fetchAvatar?: AvatarSnapshotFetch;
+	maximumBytes?: number;
+}
+
+export interface ResolveDiscordAvatarSnapshotOptions {
+	bucket: AvatarSnapshotBucket | undefined;
+	discordId: string;
+	avatarHash: string | null;
+	previousAvatarHash: string | null;
+	previousSnapshotSha256: string | null;
+	fetchAvatar?: AvatarSnapshotFetch;
+	maximumBytes?: number;
+}
+
+export interface DiscordAvatarSnapshotResolution {
+	sha256: string | null;
+	captureError: unknown | null;
 }
 
 function assertSha256Hex(sha256: string): void {
@@ -112,9 +146,9 @@ async function putImmutable(
 	checksum: ArrayBuffer
 ): Promise<boolean> {
 	const result = await bucket.put(key, bytes, {
-		onlyIf: new Headers({
-			'If-None-Match': '*'
-		}),
+		onlyIf: {
+			etagDoesNotMatch: '*'
+		},
 		httpMetadata: {
 			contentType: AVATAR_CONTENT_TYPE,
 			cacheControl: AVATAR_CACHE_CONTROL
@@ -207,4 +241,87 @@ export async function storeAvatarSnapshot(
 		sourceWasCreated,
 		variantWasCreated
 	};
+}
+
+function discordAvatarUrl(discordId: string, avatarHash: string, size: DiscordAvatarSize): string {
+	const url = new URL(
+		`https://cdn.discordapp.com/avatars/${encodeURIComponent(
+			discordId
+		)}/${encodeURIComponent(avatarHash)}.webp`
+	);
+
+	url.searchParams.set('size', String(size));
+
+	return url.toString();
+}
+
+export async function captureDiscordAvatarSnapshot(
+	options: CaptureDiscordAvatarSnapshotOptions
+): Promise<AvatarSnapshotStorageResult> {
+	const fetchAvatar = options.fetchAvatar ?? fetch;
+	const maximumBytes = options.maximumBytes ?? DISCORD_AVATAR_MAXIMUM_BYTES;
+
+	const [sourceResponse, variantResponse] = await Promise.all([
+		fetchAvatar(
+			discordAvatarUrl(options.discordId, options.avatarHash, DISCORD_AVATAR_SOURCE_SIZE)
+		),
+		fetchAvatar(
+			discordAvatarUrl(options.discordId, options.avatarHash, DISCORD_AVATAR_VARIANT_SIZE)
+		)
+	]);
+
+	const [source, variant] = await Promise.all([
+		readDiscordAvatarResponse(sourceResponse, maximumBytes),
+		readDiscordAvatarResponse(variantResponse, maximumBytes)
+	]);
+
+	return storeAvatarSnapshot(options.bucket, source, variant);
+}
+
+export async function resolveDiscordAvatarSnapshot(
+	options: ResolveDiscordAvatarSnapshotOptions
+): Promise<DiscordAvatarSnapshotResolution> {
+	if (options.avatarHash === null) {
+		return {
+			sha256: null,
+			captureError: null
+		};
+	}
+
+	if (
+		options.avatarHash === options.previousAvatarHash &&
+		options.previousSnapshotSha256 !== null
+	) {
+		return {
+			sha256: options.previousSnapshotSha256,
+			captureError: null
+		};
+	}
+
+	if (!options.bucket) {
+		return {
+			sha256: null,
+			captureError: new Error('Avatar snapshot bucket is not available.')
+		};
+	}
+
+	try {
+		const snapshot = await captureDiscordAvatarSnapshot({
+			bucket: options.bucket,
+			discordId: options.discordId,
+			avatarHash: options.avatarHash,
+			fetchAvatar: options.fetchAvatar,
+			maximumBytes: options.maximumBytes
+		});
+
+		return {
+			sha256: snapshot.sha256,
+			captureError: null
+		};
+	} catch (captureError) {
+		return {
+			sha256: null,
+			captureError
+		};
+	}
 }

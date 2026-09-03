@@ -2,7 +2,9 @@ import { describe, expect, it, vi } from 'vitest';
 import {
 	avatarSourceKey,
 	avatarVariantKey,
+	captureDiscordAvatarSnapshot,
 	readDiscordAvatarResponse,
+	resolveDiscordAvatarSnapshot,
 	storeAvatarSnapshot,
 	type AvatarImage,
 	type AvatarSnapshotBucket,
@@ -232,7 +234,9 @@ describe('storeAvatarSnapshot', () => {
 		);
 
 		for (const object of Object.values(objects)) {
-			expect(object.options.onlyIf.get('If-None-Match')).toBe('*');
+			expect(object.options.onlyIf).toEqual({
+				etagDoesNotMatch: '*'
+			});
 
 			expect(object.options.httpMetadata).toEqual({
 				contentType: 'image/webp',
@@ -298,5 +302,256 @@ describe('storeAvatarSnapshot', () => {
 		await expect(storeAvatarSnapshot(createBucket().bucket, image, empty)).rejects.toThrow(
 			'Variant avatar image must not be empty.'
 		);
+	});
+});
+
+describe('captureDiscordAvatarSnapshot', () => {
+	it('fetches and stores fixed 512 and 128 pixel WebP representations', async () => {
+		const sourceBody = 'TEST_CAPTURE_SOURCE_WEBP';
+		const variantBody = 'TEST_CAPTURE_VARIANT_WEBP';
+
+		const fetchAvatar = vi.fn(async (url: string): Promise<Response> => {
+			const size = new URL(url).searchParams.get('size');
+
+			return new Response(size === '512' ? sourceBody : variantBody, {
+				headers: {
+					'Content-Type': 'image/webp'
+				}
+			});
+		});
+
+		const { bucket, objects } = createBucket();
+
+		const result = await captureDiscordAvatarSnapshot({
+			bucket,
+			discordId: 'TEST_DISCORD_ID',
+			avatarHash: 'TEST_AVATAR_HASH',
+			fetchAvatar
+		});
+
+		expect(fetchAvatar).toHaveBeenCalledTimes(2);
+		expect(fetchAvatar).toHaveBeenNthCalledWith(
+			1,
+			'https://cdn.discordapp.com/avatars/TEST_DISCORD_ID/TEST_AVATAR_HASH.webp?size=512'
+		);
+		expect(fetchAvatar).toHaveBeenNthCalledWith(
+			2,
+			'https://cdn.discordapp.com/avatars/TEST_DISCORD_ID/TEST_AVATAR_HASH.webp?size=128'
+		);
+
+		const sourceBytes = new TextEncoder().encode(sourceBody);
+		const expectedSource = new ArrayBuffer(sourceBytes.byteLength);
+		new Uint8Array(expectedSource).set(sourceBytes);
+
+		expect(result.sha256).toBe(await digestHex(expectedSource));
+
+		expect(new TextDecoder().decode(objects[result.sourceKey].bytes)).toBe(sourceBody);
+
+		expect(new TextDecoder().decode(objects[result.variantKey].bytes)).toBe(variantBody);
+	});
+
+	it.each([512, 128])(
+		'does not write to R2 when the %i pixel request fails',
+		async (failedSize) => {
+			const fetchAvatar = vi.fn(async (url: string): Promise<Response> => {
+				const size = Number(new URL(url).searchParams.get('size'));
+
+				if (size === failedSize) {
+					return new Response(null, {
+						status: 404,
+						headers: {
+							'Content-Type': 'image/webp'
+						}
+					});
+				}
+
+				return new Response('TEST_WEBP_BYTES', {
+					headers: {
+						'Content-Type': 'image/webp'
+					}
+				});
+			});
+
+			const { bucket, put } = createBucket();
+
+			await expect(
+				captureDiscordAvatarSnapshot({
+					bucket,
+					discordId: 'TEST_DISCORD_ID',
+					avatarHash: 'TEST_AVATAR_HASH',
+					fetchAvatar
+				})
+			).rejects.toThrow('Discord avatar request failed with HTTP 404.');
+
+			expect(fetchAvatar).toHaveBeenCalledTimes(2);
+			expect(put).not.toHaveBeenCalled();
+		}
+	);
+
+	it('does not write to R2 unless both responses pass validation', async () => {
+		const fetchAvatar = vi.fn(async (url: string): Promise<Response> => {
+			const size = new URL(url).searchParams.get('size');
+
+			return new Response('TEST_IMAGE_BYTES', {
+				headers: {
+					'Content-Type': size === '512' ? 'image/webp' : 'image/png'
+				}
+			});
+		});
+
+		const { bucket, put } = createBucket();
+
+		await expect(
+			captureDiscordAvatarSnapshot({
+				bucket,
+				discordId: 'TEST_DISCORD_ID',
+				avatarHash: 'TEST_AVATAR_HASH',
+				fetchAvatar
+			})
+		).rejects.toThrow('Discord avatar response must have Content-Type image/webp.');
+
+		expect(put).not.toHaveBeenCalled();
+	});
+
+	it('propagates an R2 write failure', async () => {
+		const fetchAvatar = vi.fn(
+			async (): Promise<Response> =>
+				new Response('TEST_WEBP_BYTES', {
+					headers: {
+						'Content-Type': 'image/webp'
+					}
+				})
+		);
+
+		const { bucket } = createBucket((key) => key.startsWith('discord-avatars/variants/'));
+
+		await expect(
+			captureDiscordAvatarSnapshot({
+				bucket,
+				discordId: 'TEST_DISCORD_ID',
+				avatarHash: 'TEST_AVATAR_HASH',
+				fetchAvatar
+			})
+		).rejects.toThrow('TEST_R2_WRITE_FAILURE');
+	});
+});
+
+describe('resolveDiscordAvatarSnapshot', () => {
+	it('clears the snapshot when Discord reports no custom avatar', async () => {
+		const fetchAvatar = vi.fn();
+
+		const result = await resolveDiscordAvatarSnapshot({
+			bucket: undefined,
+			discordId: 'TEST_DISCORD_ID',
+			avatarHash: null,
+			previousAvatarHash: 'TEST_PREVIOUS_AVATAR_HASH',
+			previousSnapshotSha256: '0123456789abcdef'.repeat(4),
+			fetchAvatar
+		});
+
+		expect(result).toEqual({
+			sha256: null,
+			captureError: null
+		});
+		expect(fetchAvatar).not.toHaveBeenCalled();
+	});
+
+	it('reuses an existing snapshot for an unchanged avatar hash', async () => {
+		const snapshotSha256 = '0123456789abcdef'.repeat(4);
+		const fetchAvatar = vi.fn();
+
+		const result = await resolveDiscordAvatarSnapshot({
+			bucket: undefined,
+			discordId: 'TEST_DISCORD_ID',
+			avatarHash: 'TEST_AVATAR_HASH',
+			previousAvatarHash: 'TEST_AVATAR_HASH',
+			previousSnapshotSha256: snapshotSha256,
+			fetchAvatar
+		});
+
+		expect(result).toEqual({
+			sha256: snapshotSha256,
+			captureError: null
+		});
+		expect(fetchAvatar).not.toHaveBeenCalled();
+	});
+
+	it.each([
+		['changed avatar hash', 'TEST_PREVIOUS_AVATAR_HASH'],
+		['missing snapshot', 'TEST_AVATAR_HASH']
+	])('captures a snapshot for a %s', async (_, previousAvatarHash) => {
+		const fetchAvatar = vi.fn(
+			async (url: string): Promise<Response> =>
+				new Response(
+					new URL(url).searchParams.get('size') === '512'
+						? 'TEST_SOURCE_WEBP'
+						: 'TEST_VARIANT_WEBP',
+					{
+						headers: {
+							'Content-Type': 'image/webp'
+						}
+					}
+				)
+		);
+
+		const { bucket } = createBucket();
+
+		const result = await resolveDiscordAvatarSnapshot({
+			bucket,
+			discordId: 'TEST_DISCORD_ID',
+			avatarHash: 'TEST_AVATAR_HASH',
+			previousAvatarHash,
+			previousSnapshotSha256: null,
+			fetchAvatar
+		});
+
+		expect(result.sha256).toBe(await digestHex(createImage('TEST_SOURCE_WEBP').bytes));
+		expect(result.captureError).toBeNull();
+		expect(fetchAvatar).toHaveBeenCalledTimes(2);
+	});
+
+	it('returns a null digest instead of throwing when capture fails', async () => {
+		const fetchError = new Error('TEST_DISCORD_FETCH_FAILURE');
+
+		const fetchAvatar = vi.fn(async (): Promise<Response> => {
+			throw fetchError;
+		});
+
+		const { bucket } = createBucket();
+
+		const result = await resolveDiscordAvatarSnapshot({
+			bucket,
+			discordId: 'TEST_DISCORD_ID',
+			avatarHash: 'TEST_NEW_AVATAR_HASH',
+			previousAvatarHash: 'TEST_PREVIOUS_AVATAR_HASH',
+			previousSnapshotSha256: '0123456789abcdef'.repeat(4),
+			fetchAvatar
+		});
+
+		expect(result).toEqual({
+			sha256: null,
+			captureError: fetchError
+		});
+	});
+
+	it('returns a null digest when the R2 binding is unavailable', async () => {
+		const fetchAvatar = vi.fn();
+
+		const result = await resolveDiscordAvatarSnapshot({
+			bucket: undefined,
+			discordId: 'TEST_DISCORD_ID',
+			avatarHash: 'TEST_AVATAR_HASH',
+			previousAvatarHash: null,
+			previousSnapshotSha256: null,
+			fetchAvatar
+		});
+
+		expect(result.sha256).toBeNull();
+		expect(result.captureError).toEqual(
+			expect.objectContaining({
+				message: 'Avatar snapshot bucket is not available.'
+			})
+		);
+		expect(fetchAvatar).not.toHaveBeenCalled();
 	});
 });

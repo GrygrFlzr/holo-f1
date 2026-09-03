@@ -1,4 +1,6 @@
 <script lang="ts">
+	import DiscordAvatar from '$lib/components/DiscordAvatar.svelte';
+
 	let { data, form } = $props();
 
 	const raceResultFields = [
@@ -47,16 +49,6 @@
 				typeof entry.bold_prediction === 'string' && entry.bold_prediction.trim().length > 0
 		)
 	);
-
-	function avatarBase(entry: { discord_id: string; avatar_hash: string | null }): string {
-		if (entry.avatar_hash) {
-			return `https://cdn.discordapp.com/avatars/${entry.discord_id}/${entry.avatar_hash}.webp`;
-		}
-
-		const defaultAvatar = (BigInt(entry.discord_id) >> 22n) % 6n;
-
-		return `https://cdn.discordapp.com/embed/avatars/${defaultAvatar}.png`;
-	}
 </script>
 
 {#snippet resultSelect(field: ResultField)}
@@ -186,23 +178,13 @@
 
 						<tbody>
 							{#each data.entries as entry (entry.discord_id)}
-								{const baseImage = $derived(avatarBase(entry))}
-
 								<tr>
 									<td class="avatar-cell">
-										<img
-											class="avatar"
-											alt={`Avatar for ${entry.discord_name}`}
-											src={`${baseImage}?size=40`}
-											srcset={[
-												[`${baseImage}?size=40`, '1x'],
-												[`${baseImage}?size=80`, '2x'],
-												[`${baseImage}?size=120`, '3x']
-											]
-												.map(([url, density]) => `${url} ${density}`)
-												.join(', ')}
-											width="40"
-											height="40"
+										<DiscordAvatar
+											discordId={entry.discord_id}
+											avatarHash={entry.avatar_hash}
+											size={40}
+											alt=""
 										/>
 									</td>
 
@@ -522,13 +504,6 @@
 
 	.avatar-cell {
 		width: var(--space-5);
-	}
-
-	.avatar {
-		display: block;
-		width: var(--space-5);
-		height: var(--space-5);
-		object-fit: cover;
 	}
 
 	.prediction,

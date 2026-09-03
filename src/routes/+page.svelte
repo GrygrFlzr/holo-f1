@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import DiscordAvatar from '$lib/components/DiscordAvatar.svelte';
 
 	let { data } = $props();
 
@@ -23,22 +24,12 @@
 			<span class="wordmark">Holo F1</span>
 
 			{#if data.user}
-				{const avatarSize = 40}
-				{const avatarBase = $derived(
-					data.user.avatar_hash
-						? `https://cdn.discordapp.com/avatars/${data.user.discord_id}/${data.user.avatar_hash}.webp`
-						: `https://cdn.discordapp.com/embed/avatars/${
-								(BigInt(data.user.discord_id) >> 22n) % 6n
-							}.png`
-				)}
-
 				<div class="account">
-					<img
-						class="avatar"
-						src={`${avatarBase}?size=${avatarSize * 2}`}
+					<DiscordAvatar
+						discordId={data.user.discord_id}
+						avatarHash={data.user.avatar_hash}
+						size={40}
 						alt=""
-						width={avatarSize}
-						height={avatarSize}
 					/>
 
 					<span>{data.user.display_name}</span>
@@ -235,13 +226,6 @@
 		align-items: center;
 		gap: var(--space-2);
 		font-weight: 700;
-	}
-
-	.avatar {
-		display: block;
-		flex: 0 0 auto;
-		border: 1px solid var(--rule);
-		border-radius: 50%;
 	}
 
 	.home-main {

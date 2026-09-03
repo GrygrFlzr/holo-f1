@@ -112,3 +112,19 @@
 		</section>
 	{/if}
 </main>
+
+<style>
+	.team-name {
+		display: flex;
+		align-items: center;
+		gap: var(--space-2);
+		font-weight: 700;
+	}
+
+	.team-mark {
+		flex: 0 0 auto;
+		width: var(--space-1);
+		height: var(--space-4);
+		background: var(--team-color);
+	}
+</style>

@@ -1,5 +1,12 @@
 <script lang="ts">
-	import type { StandingWeekend, TeamStanding } from '$lib/standings';
+	import type { StandingPoint, StandingWeekend } from '$lib/standings';
+
+	interface ProgressionSeries {
+		id: string | number;
+		name: string;
+		color: string | null;
+		history: readonly StandingPoint[];
+	}
 
 	let {
 		title,
@@ -8,30 +15,27 @@
 	}: {
 		title: string;
 		weekends: readonly StandingWeekend[];
-		series: readonly TeamStanding[];
+		series: readonly ProgressionSeries[];
 	} = $props();
 
 	const width = 1040;
-	const height = 420;
+	const minimumHeight = 420;
 
 	const plotLeft = 56;
 	const plotRight = 760;
 	const plotTop = 24;
-	const plotBottom = 324;
+	const plotBottomInset = 96;
 
 	const labelX = 792;
 	const connectorX = labelX - 24;
-	const labelTop = 16;
-	const labelBottom = height - 16;
-
-	const xTickTextY = plotBottom + 28;
+	const labelInset = 16;
 
 	const labelHeadingHeight = 16;
 	const labelRowHeight = 16;
 	const labelGroupGap = 8;
 
-	interface LabelTeam {
-		id: number;
+	interface LabelSeries {
+		id: string | number;
 		name: string;
 		color: string;
 	}
@@ -39,7 +43,7 @@
 	interface PendingLabelGroup {
 		points: number;
 		anchorY: number;
-		teams: LabelTeam[];
+		series: LabelSeries[];
 	}
 
 	interface PackedLabelGroup extends PendingLabelGroup {
@@ -58,6 +62,28 @@
 		return color?.trim() || '#ff5148';
 	}
 
+	function buildChartHeight(items: readonly ProgressionSeries[]): number {
+		const finalPoints = items.flatMap((item) => {
+			const last = item.history[item.history.length - 1];
+
+			return last ? [last.cumulativePoints] : [];
+		});
+
+		const groupCount = new Set(finalPoints).size;
+
+		const packedHeight =
+			groupCount * labelHeadingHeight +
+			finalPoints.length * labelRowHeight +
+			Math.max(0, groupCount - 1) * labelGroupGap;
+
+		return Math.max(minimumHeight, labelInset * 2 + packedHeight);
+	}
+
+	let height = $derived(buildChartHeight(series));
+	let plotBottom = $derived(height - plotBottomInset);
+	let labelBottom = $derived(height - labelInset);
+	let xTickTextY = $derived(plotBottom + 28);
+
 	function checkpointX(checkpoint: number, intervalCount: number): number {
 		return plotLeft + (checkpoint / intervalCount) * (plotRight - plotLeft);
 	}
@@ -66,12 +92,16 @@
 		return plotBottom - (value / scaleMaximum) * (plotBottom - plotTop);
 	}
 
-	function buildStepPath(team: TeamStanding, intervalCount: number, scaleMaximum: number): string {
+	function buildStepPath(
+		item: ProgressionSeries,
+		intervalCount: number,
+		scaleMaximum: number
+	): string {
 		const commands = [
 			`M ${checkpointX(0, intervalCount).toFixed(2)} ${pointsY(0, scaleMaximum).toFixed(2)}`
 		];
 
-		team.history.forEach((point, index) => {
+		item.history.forEach((point, index) => {
 			const pointX = checkpointX(index + 1, intervalCount);
 			const pointY = pointsY(point.cumulativePoints, scaleMaximum);
 
@@ -82,33 +112,33 @@
 	}
 
 	function buildPendingLabelGroups(
-		teams: readonly TeamStanding[],
+		items: readonly ProgressionSeries[],
 		scaleMaximum: number
 	): PendingLabelGroup[] {
 		const groups: PendingLabelGroup[] = [];
 
-		for (const team of teams) {
-			const last = team.history[team.history.length - 1];
+		for (const item of items) {
+			const last = item.history[item.history.length - 1];
 
 			if (!last) {
 				continue;
 			}
 
-			const labelTeam: LabelTeam = {
-				id: team.id,
-				name: team.name,
-				color: seriesColor(team.color)
+			const labelSeries: LabelSeries = {
+				id: item.id,
+				name: item.name,
+				color: seriesColor(item.color)
 			};
 
 			const existingGroup = groups.find((group) => group.points === last.cumulativePoints);
 
 			if (existingGroup) {
-				existingGroup.teams.push(labelTeam);
+				existingGroup.series.push(labelSeries);
 			} else {
 				groups.push({
 					points: last.cumulativePoints,
 					anchorY: pointsY(last.cumulativePoints, scaleMaximum),
-					teams: [labelTeam]
+					series: [labelSeries]
 				});
 			}
 		}
@@ -125,10 +155,10 @@
 			.sort((left, right) => left.anchorY - right.anchorY || right.points - left.points)
 			.map((group) => ({
 				...group,
-				height: labelHeadingHeight + group.teams.length * labelRowHeight
+				height: labelHeadingHeight + group.series.length * labelRowHeight
 			}));
 
-		const availableHeight = labelBottom - labelTop;
+		const availableHeight = labelBottom - labelInset;
 
 		const totalHeight = dimensions.reduce((total, group) => total + group.height, 0);
 
@@ -142,7 +172,7 @@
 
 		const placed: PackedLabelGroup[] = dimensions.map((group) => {
 			const top = Math.max(
-				labelTop,
+				labelInset,
 				Math.min(group.anchorY - group.height / 2, labelBottom - group.height)
 			);
 
@@ -160,7 +190,6 @@
 		}
 
 		const last = placed[placed.length - 1];
-
 		const overflow = last.top + last.height - labelBottom;
 
 		if (overflow > 0) {
@@ -175,7 +204,7 @@
 			placed[index].top = Math.min(placed[index].top, next.top - placed[index].height - gap);
 		}
 
-		const underflow = labelTop - placed[0].top;
+		const underflow = labelInset - placed[0].top;
 
 		if (underflow > 0) {
 			for (const group of placed) {
@@ -227,27 +256,23 @@
 	}
 
 	let maximum = $derived(
-		Math.max(0, ...series.flatMap((team) => team.history.map((point) => point.cumulativePoints)))
+		Math.max(0, ...series.flatMap((item) => item.history.map((point) => point.cumulativePoints)))
 	);
 
 	let scaleMaximum = $derived(Math.max(1, maximum));
-
 	let intervalCount = $derived(Math.max(1, weekends.length));
 
 	let chartSeries = $derived(
-		series.map((team) => ({
-			team,
-			color: seriesColor(team.color),
-			path: buildStepPath(team, intervalCount, scaleMaximum)
+		series.map((item) => ({
+			series: item,
+			color: seriesColor(item.color),
+			path: buildStepPath(item, intervalCount, scaleMaximum)
 		}))
 	);
 
 	let yTicks = $derived(buildYTicks(maximum));
-
 	let xTicks = $derived(buildXTicks(weekends));
-
 	let labelGroups = $derived(packLabelGroups(buildPendingLabelGroups(series, scaleMaximum)));
-
 	let endpointX = $derived(checkpointX(weekends.length, intervalCount));
 </script>
 
@@ -261,7 +286,7 @@
 
 		<g class="guides">
 			{#each yTicks as tick (tick)}
-				{const tickY = $derived(pointsY(tick, scaleMaximum))}
+				{@const tickY = pointsY(tick, scaleMaximum)}
 
 				<line x1={plotLeft} x2={plotRight} y1={tickY} y2={tickY} />
 
@@ -275,7 +300,7 @@
 
 		<g class="weekends">
 			{#each xTicks as tick (tick.key)}
-				{const tickX = $derived(checkpointX(tick.checkpoint, intervalCount))}
+				{@const tickX = checkpointX(tick.checkpoint, intervalCount)}
 
 				<line x1={tickX} x2={tickX} y1={plotBottom} y2={plotBottom + 6} />
 
@@ -290,14 +315,14 @@
 			{/each}
 		</g>
 
-		{#each chartSeries as item (item.team.id)}
+		{#each chartSeries as item (item.series.id)}
 			<path class="series-underlay" d={item.path} />
 		{/each}
 
-		{#each chartSeries as item (item.team.id)}
+		{#each chartSeries as item (item.series.id)}
 			<path class="series-line" d={item.path} stroke={item.color} />
 
-			{#each item.team.history as point, index (point.weekendId)}
+			{#each item.series.history as point, index (point.weekendId)}
 				<circle
 					cx={checkpointX(index + 1, intervalCount)}
 					cy={pointsY(point.cumulativePoints, scaleMaximum)}
@@ -305,7 +330,7 @@
 					fill={item.color}
 				>
 					<title>
-						{item.team.name}, {point.weekendName}:
+						{item.series.name}, {point.weekendName}:
 						{point.cumulativePoints} cumulative points
 					</title>
 				</circle>
@@ -330,22 +355,20 @@
 				{group.points === 1 ? ' point' : ' points'}
 			</text>
 
-			{#each group.teams as team, index (team.id)}
-				{const rowY = $derived(
-					group.top + labelHeadingHeight + index * labelRowHeight + labelRowHeight / 2
-				)}
+			{#each group.series as item, index (item.id)}
+				{@const rowY = group.top + labelHeadingHeight + index * labelRowHeight + labelRowHeight / 2}
 
 				<line
-					class="team-key"
+					class="series-key"
 					x1={labelX}
 					x2={labelX + 12}
 					y1={rowY}
 					y2={rowY}
-					stroke={team.color}
+					stroke={item.color}
 				/>
 
 				<text class="series-label" x={labelX + 20} y={rowY} dominant-baseline="middle">
-					{team.name}
+					{item.name}
 				</text>
 			{/each}
 		{/each}
@@ -424,7 +447,7 @@
 		stroke-width: 2;
 	}
 
-	.team-key {
+	.series-key {
 		stroke-width: 3;
 		vector-effect: non-scaling-stroke;
 	}

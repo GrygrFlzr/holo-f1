@@ -16,7 +16,10 @@
 		<nav class="season-nav" aria-label="Season 4">
 			<a
 				href={individualsHref}
-				aria-current={page.url.pathname === individualsHref ? 'page' : undefined}
+				aria-current={page.url.pathname === individualsHref ||
+				page.url.pathname.startsWith(`${individualsHref}/`)
+					? 'page'
+					: undefined}
 			>
 				Individuals
 			</a>

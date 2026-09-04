@@ -6,13 +6,14 @@
 
 	const individualsHref = resolve('/season-4/individuals');
 	const teamsHref = resolve('/season-4/teams');
+	const resultsHref = resolve('/season-4/results');
 </script>
 
 <div class="season-shell">
 	<header class="season-header">
 		<a class="season-title" href={individualsHref}> Season 4 </a>
 
-		<nav class="season-nav" aria-label="Season 4 standings">
+		<nav class="season-nav" aria-label="Season 4">
 			<a
 				href={individualsHref}
 				aria-current={page.url.pathname === individualsHref ? 'page' : undefined}
@@ -22,6 +23,10 @@
 
 			<a href={teamsHref} aria-current={page.url.pathname === teamsHref ? 'page' : undefined}>
 				Teams
+			</a>
+
+			<a href={resultsHref} aria-current={page.url.pathname === resultsHref ? 'page' : undefined}>
+				Results
 			</a>
 		</nav>
 	</header>

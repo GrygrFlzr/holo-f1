@@ -27,7 +27,7 @@
 				<div class="account">
 					<DiscordAvatar
 						discordId={data.user.discord_id}
-						avatarHash={data.user.avatar_hash}
+						avatarSnapshotSha256={data.user.avatar_snapshot_sha256}
 						size={40}
 						alt=""
 					/>

@@ -1,7 +1,7 @@
 const SHA256_HEX_PATTERN = /^[0-9a-f]{64}$/;
 
-const AVATAR_CONTENT_TYPE = 'image/webp';
-const AVATAR_CACHE_CONTROL = 'public, max-age=31536000, immutable';
+export const AVATAR_CONTENT_TYPE = 'image/webp';
+export const AVATAR_CACHE_CONTROL = 'public, max-age=31536000, immutable';
 
 export type AvatarVariant = 'w128';
 
@@ -64,8 +64,12 @@ export interface DiscordAvatarSnapshotResolution {
 	captureError: unknown | null;
 }
 
+export function isAvatarSnapshotSha256(value: string): boolean {
+	return SHA256_HEX_PATTERN.test(value);
+}
+
 function assertSha256Hex(sha256: string): void {
-	if (!SHA256_HEX_PATTERN.test(sha256)) {
+	if (!isAvatarSnapshotSha256(sha256)) {
 		throw new TypeError('Avatar snapshot digest must be 64-character lowercase hexadecimal text.');
 	}
 }

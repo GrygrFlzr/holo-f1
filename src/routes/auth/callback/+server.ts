@@ -1,6 +1,6 @@
 import { error, redirect } from '@sveltejs/kit';
 import { AUTH_SECRET, DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET } from '$app/env/private';
-import { createSessionCookie, SESSION_COOKIE } from '$lib/server/auth';
+import { createSessionCookie, SESSION_COOKIE, SESSION_MAX_AGE_SECONDS } from '$lib/server/auth';
 import { resolveDiscordAvatarSnapshot } from '$lib/server/avatar-snapshots';
 import type { RequestHandler } from './$types';
 
@@ -141,6 +141,7 @@ export const GET = (async ({ url, locals, cookies, platform }) => {
 			sub: discordUser.id,
 			name: row?.custom_name ?? discordName,
 			avatar: discordUser.avatar,
+			avatar_snapshot_sha256: avatarSnapshot.sha256,
 			role: (row?.role ?? 'user') as 'user' | 'steward' | 'admin'
 		},
 		AUTH_SECRET
@@ -150,7 +151,7 @@ export const GET = (async ({ url, locals, cookies, platform }) => {
 		secure: url.protocol === 'https:',
 		sameSite: 'lax',
 		path: '/',
-		maxAge: 30 * 24 * 60 * 60
+		maxAge: SESSION_MAX_AGE_SECONDS
 	});
 
 	redirect(302, '/submit');

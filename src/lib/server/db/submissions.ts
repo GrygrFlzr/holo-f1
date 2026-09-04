@@ -29,7 +29,7 @@ export interface SubmissionInput {
 export interface StewardSubmission extends Submission {
 	discord_id: string;
 	discord_name: string;
-	avatar_hash: string | null;
+	avatar_snapshot_sha256: string | null;
 	sprint_pole_code: string | null;
 	sprint_p1_code: string | null;
 	pole_code: string;
@@ -81,7 +81,7 @@ export async function getSubmissionsForScoring(
 			select
 				u.discord_id,
 				u.discord_name,
-				u.avatar_hash,
+				u.avatar_snapshot_sha256,
 
 				s.sprint_pole_driver_id,
 				s.sprint_p1_driver_id,

@@ -41,6 +41,7 @@ const BASE_ENTRY: EntryFixture = {
 	weekendId: TEST_WEEKEND_IDS.a,
 	userId: 'TEST_USER_A',
 	userName: 'TEST_PARTICIPANT_A',
+	userAvatarSnapshotSha256: null,
 	teamId: 80_001,
 	teamName: 'TEST_TEAM_A',
 	teamColor: null,
@@ -218,6 +219,20 @@ describe('buildSeasonStandings aggregation', () => {
 			[0, 2],
 			[3, 5]
 		]);
+	});
+
+	it('retains the participant avatar snapshot', () => {
+		const avatarSnapshotSha256 = '0123456789abcdef'.repeat(4);
+
+		const standings = buildSeasonStandings(4, TEST_WEEKENDS.slice(0, 1), [
+			createEntry({
+				userAvatarSnapshotSha256: avatarSnapshotSha256
+			})
+		]);
+
+		expect(requireIndividual(standings, 'TEST_USER_A').avatarSnapshotSha256).toBe(
+			avatarSnapshotSha256
+		);
 	});
 });
 

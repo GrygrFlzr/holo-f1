@@ -1,20 +1,24 @@
 <script lang="ts">
+	import { resolve } from '$app/paths';
+
 	interface Props {
 		discordId: string;
-		avatarHash: string | null;
+		avatarSnapshotSha256: string | null;
 		size: number;
 		alt?: string;
 	}
 
-	let { discordId, avatarHash, size, alt = '' }: Props = $props();
+	let { discordId, avatarSnapshotSha256, size, alt = '' }: Props = $props();
 
-	let avatarBase = $derived(
-		avatarHash
-			? `https://cdn.discordapp.com/avatars/${discordId}/${avatarHash}.webp`
-			: `https://cdn.discordapp.com/embed/avatars/${(BigInt(discordId) >> 22n) % 6n}.png`
+	let defaultAvatarIndex = $derived((BigInt(discordId) >> 22n) % 6n);
+
+	let src = $derived(
+		avatarSnapshotSha256
+			? resolve('/avatars/[sha256=sha256]/w128.webp', {
+					sha256: avatarSnapshotSha256
+				})
+			: `https://cdn.discordapp.com/embed/avatars/${defaultAvatarIndex}.png?size=${size * 2}`
 	);
-
-	let src = $derived(`${avatarBase}?size=${size * 2}`);
 </script>
 
 <img class="avatar" {src} {alt} width={size} height={size} />

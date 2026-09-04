@@ -18,6 +18,7 @@ interface WeekendRow {
 interface StandingRow {
 	user_id: string;
 	user_name: string;
+	user_avatar_snapshot_sha256: string | null;
 	weekend_id: number;
 
 	team_id: number;
@@ -103,6 +104,7 @@ export async function getSeasonStandings(
 			select
 				s.user_id,
 				u.discord_name as user_name,
+				u.avatar_snapshot_sha256 as user_avatar_snapshot_sha256,
 				s.weekend_id,
 
 				s.team_id,
@@ -171,6 +173,7 @@ export async function getSeasonStandings(
 			weekendId: row.weekend_id,
 			userId: row.user_id,
 			userName: row.user_name,
+			userAvatarSnapshotSha256: row.user_avatar_snapshot_sha256,
 			teamId: row.team_id,
 			teamName: row.team_name,
 			teamColor: row.team_color,

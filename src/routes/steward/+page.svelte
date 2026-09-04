@@ -182,7 +182,7 @@
 									<td class="avatar-cell">
 										<DiscordAvatar
 											discordId={entry.discord_id}
-											avatarHash={entry.avatar_hash}
+											avatarSnapshotSha256={entry.avatar_snapshot_sha256}
 											size={40}
 											alt=""
 										/>

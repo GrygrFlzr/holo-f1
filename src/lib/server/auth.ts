@@ -1,12 +1,70 @@
 import { error } from '@sveltejs/kit';
+import { isAvatarSnapshotSha256 } from '$lib/server/avatar-snapshots';
 
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
-const ROLE_LEVEL: Record<string, number> = { user: 0, steward: 1, admin: 2 } as const;
+
+const ROLE_LEVEL: Record<string, number> = {
+	user: 0,
+	steward: 1,
+	admin: 2
+} as const;
+
 export const SESSION_COOKIE = 'session' as const;
+export const SESSION_SCHEMA_VERSION = 2 as const;
+export const SESSION_MAX_AGE_SECONDS = 2_592_000 as const;
+
+export type SessionRole = 'user' | 'steward' | 'admin';
+
+interface SessionPayloadFields {
+	sub: string;
+	name: string;
+	avatar: string | null;
+	role: SessionRole;
+	exp: number;
+}
+
+type SessionPayloadV1 = SessionPayloadFields;
+
+interface SessionPayloadV2 extends SessionPayloadFields {
+	sv: typeof SESSION_SCHEMA_VERSION;
+	avatar_snapshot_sha256: string | null;
+}
+
+export interface SessionCookieUser {
+	sub: string;
+	name: string;
+	avatar: string | null;
+	avatar_snapshot_sha256: string | null;
+	role: SessionRole;
+}
+
+type AuthenticatedUser = NonNullable<App.Locals['user']>;
+
+export type VerifiedSession =
+	| {
+			schemaVersion: 1;
+			expiresAt: number;
+			user: AuthenticatedUser;
+	  }
+	| {
+			schemaVersion: 2;
+			expiresAt: number;
+			user: AuthenticatedUser;
+	  };
+
+type DecodedSessionPayload =
+	| {
+			schemaVersion: 1;
+			payload: SessionPayloadV1;
+	  }
+	| {
+			schemaVersion: 2;
+			payload: SessionPayloadV2;
+	  };
 
 /**
- * re-derived per-session
+ * Re-derived per session.
  */
 async function getKey(secret: string): Promise<CryptoKey> {
 	return crypto.subtle.importKey(
@@ -21,67 +79,172 @@ async function getKey(secret: string): Promise<CryptoKey> {
 	);
 }
 
-function toBase64Url(bytes: Uint8Array<ArrayBuffer>): string {
+function toBase64Url(bytes: Uint8Array): string {
 	return btoa(String.fromCharCode(...bytes))
 		.replaceAll(/\+/g, '-')
 		.replaceAll(/\//g, '_')
 		.replaceAll(/=/g, '');
 }
 
-function fromBase64Url(str: string): Uint8Array<ArrayBuffer> {
-	const binary = atob(str.replaceAll(/-/g, '+').replaceAll(/_/g, '/'));
-	return Uint8Array.from(binary, (c) => c.charCodeAt(0));
+function fromBase64Url(value: string): Uint8Array<ArrayBuffer> {
+	const normalized = value.replaceAll(/-/g, '+').replaceAll(/_/g, '/');
+	const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, '=');
+	const binary = atob(padded);
+	const bytes = new Uint8Array(new ArrayBuffer(binary.length));
+
+	for (let index = 0; index < binary.length; index += 1) {
+		bytes[index] = binary.charCodeAt(index);
+	}
+
+	return bytes;
 }
 
-interface SessionPayload {
-	sub: string;
-	name: string;
-	avatar: string | null;
-	role: 'user' | 'steward' | 'admin';
-	exp: number;
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
-type SessionUser = Omit<SessionPayload, 'exp'>;
+function isSessionRole(value: unknown): value is SessionRole {
+	return value === 'user' || value === 'steward' || value === 'admin';
+}
 
-const SESSION_MAX_AGE_SECONDS = 2_592_000 as const; // 30 days
+function hasSessionPayloadFields(
+	value: Record<string, unknown>
+): value is Record<string, unknown> & SessionPayloadFields {
+	return (
+		typeof value.sub === 'string' &&
+		value.sub.length > 0 &&
+		typeof value.name === 'string' &&
+		(value.avatar === null || typeof value.avatar === 'string') &&
+		isSessionRole(value.role) &&
+		Number.isSafeInteger(value.exp)
+	);
+}
 
-export async function createSessionCookie(user: SessionUser, secret: string): Promise<string> {
-	const payload: SessionPayload = {
-		...user,
-		exp: Math.floor(Date.now() / 1_000) + SESSION_MAX_AGE_SECONDS
+function decodeSessionPayload(value: unknown): DecodedSessionPayload | null {
+	if (!isRecord(value) || !hasSessionPayloadFields(value)) {
+		return null;
+	}
+
+	if (!Object.hasOwn(value, 'sv')) {
+		if (Object.hasOwn(value, 'avatar_snapshot_sha256')) {
+			return null;
+		}
+
+		return {
+			schemaVersion: 1,
+			payload: {
+				sub: value.sub,
+				name: value.name,
+				avatar: value.avatar,
+				role: value.role,
+				exp: value.exp
+			}
+		};
+	}
+
+	if (value.sv !== SESSION_SCHEMA_VERSION || !Object.hasOwn(value, 'avatar_snapshot_sha256')) {
+		return null;
+	}
+
+	const snapshot = value.avatar_snapshot_sha256;
+
+	if (snapshot !== null && (typeof snapshot !== 'string' || !isAvatarSnapshotSha256(snapshot))) {
+		return null;
+	}
+
+	return {
+		schemaVersion: 2,
+		payload: {
+			sv: SESSION_SCHEMA_VERSION,
+			sub: value.sub,
+			name: value.name,
+			avatar: value.avatar,
+			avatar_snapshot_sha256: snapshot,
+			role: value.role,
+			exp: value.exp
+		}
 	};
+}
+
+export async function createSessionCookie(
+	user: SessionCookieUser,
+	secret: string,
+	expiresAt: number = Math.floor(Date.now() / 1_000) + SESSION_MAX_AGE_SECONDS
+): Promise<string> {
+	if (!Number.isSafeInteger(expiresAt)) {
+		throw new TypeError('Session expiration must be a safe integer.');
+	}
+
+	if (
+		user.avatar_snapshot_sha256 !== null &&
+		!isAvatarSnapshotSha256(user.avatar_snapshot_sha256)
+	) {
+		throw new TypeError('Avatar snapshot digest must be 64-character lowercase hexadecimal text.');
+	}
+
+	const payload: SessionPayloadV2 = {
+		sv: SESSION_SCHEMA_VERSION,
+		...user,
+		exp: expiresAt
+	};
+
 	const key = await getKey(secret);
 	const data = encoder.encode(JSON.stringify(payload));
-	const sig = new Uint8Array(await crypto.subtle.sign('HMAC', key, data));
-	return toBase64Url(data) + '.' + toBase64Url(sig);
+	const signature = new Uint8Array(await crypto.subtle.sign('HMAC', key, data));
+
+	return toBase64Url(data) + '.' + toBase64Url(signature);
 }
 
 export async function verifySessionCookie(
 	cookie: string,
 	secret: string
-): Promise<App.Locals['user']> {
+): Promise<VerifiedSession | null> {
 	try {
-		const dot = cookie.indexOf('.');
-		if (dot === -1) return null;
+		const separator = cookie.indexOf('.');
 
-		const data = fromBase64Url(cookie.substring(0, dot));
-		const sig = fromBase64Url(cookie.substring(dot + 1));
+		if (
+			separator <= 0 ||
+			separator === cookie.length - 1 ||
+			cookie.indexOf('.', separator + 1) !== -1
+		) {
+			return null;
+		}
+
+		const data = fromBase64Url(cookie.substring(0, separator));
+		const signature = fromBase64Url(cookie.substring(separator + 1));
 
 		const key = await getKey(secret);
-		const valid = await crypto.subtle.verify('HMAC', key, sig, data);
-		if (!valid) return null;
+		const valid = await crypto.subtle.verify('HMAC', key, signature, data);
 
-		const { exp, sub, name, avatar, role } = JSON.parse(
-			decoder.decode(data)
-		) satisfies SessionPayload;
+		if (!valid) {
+			return null;
+		}
 
-		if (exp < Math.floor(Date.now() / 1_000)) return null;
+		const decoded = decodeSessionPayload(JSON.parse(decoder.decode(data)));
+
+		if (!decoded) {
+			return null;
+		}
+
+		const now = Math.floor(Date.now() / 1_000);
+
+		if (decoded.payload.exp <= now) {
+			return null;
+		}
+
+		const user: AuthenticatedUser = {
+			discord_id: decoded.payload.sub,
+			display_name: decoded.payload.name,
+			avatar_hash: decoded.payload.avatar,
+			avatar_snapshot_sha256:
+				decoded.schemaVersion === 2 ? decoded.payload.avatar_snapshot_sha256 : null,
+			role: decoded.payload.role
+		};
 
 		return {
-			discord_id: sub,
-			display_name: name,
-			avatar_hash: avatar,
-			role
+			schemaVersion: decoded.schemaVersion,
+			expiresAt: decoded.payload.exp,
+			user
 		};
 	} catch {
 		return null;
@@ -91,24 +254,37 @@ export async function verifySessionCookie(
 export async function requireRole(
 	locals: App.Locals,
 	minRole: 'steward' | 'admin'
-): Promise<App.Locals['user'] & {}> {
+): Promise<AuthenticatedUser> {
 	const user = locals.user;
-	if (!user) error(401, 'Not authenticated');
+
+	if (!user) {
+		error(401, 'Not authenticated');
+	}
 
 	const db = locals.db;
-	if (!db) error(500, 'Database not available');
+
+	if (!db) {
+		error(500, 'Database not available');
+	}
 
 	const row = await db
 		.prepare('select role from users where discord_id = ?')
 		.bind(user.discord_id)
 		.first<{ role: string }>();
 
-	if (!row) error(401, 'User not found');
+	if (!row) {
+		error(401, 'User not found');
+	}
 
 	const userLevel = ROLE_LEVEL[row.role] ?? 0;
 	const requiredLevel = ROLE_LEVEL[minRole] ?? 99;
-	if (userLevel < requiredLevel) error(403, 'Insufficient permissions');
 
-	// return user with annotated role
-	return { ...user, role: row.role as 'user' | 'steward' | 'admin' };
+	if (userLevel < requiredLevel) {
+		error(403, 'Insufficient permissions');
+	}
+
+	return {
+		...user,
+		role: row.role as SessionRole
+	};
 }

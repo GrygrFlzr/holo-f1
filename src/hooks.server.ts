@@ -1,6 +1,10 @@
 import type { Handle, ResolveOptions } from '@sveltejs/kit';
-import { SESSION_COOKIE, verifySessionCookie } from '$lib/server/auth';
+import { createSessionCookie, SESSION_COOKIE, verifySessionCookie } from '$lib/server/auth';
 import { createSession } from '$lib/server/db/session';
+
+interface AvatarSnapshotRow {
+	avatar_snapshot_sha256: string | null;
+}
 
 const preload = ((input) => {
 	switch (input.type) {
@@ -30,15 +34,69 @@ export const handle = (async ({ event, resolve }) => {
 
 	event.locals.user = null;
 	if (env) {
-		const cookie = event.cookies.get(SESSION_COOKIE);
-		if (cookie) {
-			const user = await verifySessionCookie(cookie, env.AUTH_SECRET);
-			if (user) {
-				event.locals.user = user;
-			}
-		}
 		dbSession = createSession(env.DB, event.cookies);
 		event.locals.db = dbSession;
+
+		const cookie = event.cookies.get(SESSION_COOKIE);
+		if (cookie) {
+			const session = await verifySessionCookie(cookie, env.AUTH_SECRET);
+
+			if (session?.schemaVersion === 2) {
+				event.locals.user = session.user;
+			} else if (session?.schemaVersion === 1) {
+				try {
+					const row = await dbSession
+						.prepare(
+							`
+							select avatar_snapshot_sha256
+							from users
+							where discord_id = ?
+							`
+						)
+						.bind(session.user.discord_id)
+						.first<AvatarSnapshotRow>();
+
+					if (!row) {
+						event.cookies.delete(SESSION_COOKIE, {
+							path: '/'
+						});
+					} else {
+						const user = {
+							...session.user,
+							avatar_snapshot_sha256: row.avatar_snapshot_sha256
+						};
+
+						const replacement = await createSessionCookie(
+							{
+								sub: user.discord_id,
+								name: user.display_name,
+								avatar: user.avatar_hash,
+								avatar_snapshot_sha256: user.avatar_snapshot_sha256,
+								role: user.role
+							},
+							env.AUTH_SECRET,
+							session.expiresAt
+						);
+
+						const remainingLifetime = session.expiresAt - Math.floor(Date.now() / 1_000);
+
+						event.cookies.set(SESSION_COOKIE, replacement, {
+							httpOnly: true,
+							secure: event.url.protocol === 'https:',
+							sameSite: 'lax',
+							path: '/',
+							maxAge: remainingLifetime
+						});
+
+						event.locals.user = user;
+					}
+				} catch (cause) {
+					console.error('Failed to upgrade session cookie.', cause);
+
+					event.locals.user = session.user;
+				}
+			}
+		}
 	}
 
 	const response = await resolve(event, { preload });

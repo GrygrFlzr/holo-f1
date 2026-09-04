@@ -8,6 +8,7 @@ declare global {
 				discord_id: string;
 				display_name: string;
 				avatar_hash: string | null;
+				avatar_snapshot_sha256: string | null;
 				role: 'user' | 'steward' | 'admin';
 			} | null;
 			db?: import('$lib/server/db/types').D1Queryable;

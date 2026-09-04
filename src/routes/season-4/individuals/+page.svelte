@@ -1,4 +1,5 @@
 <script lang="ts">
+	import DiscordAvatar from '$lib/components/DiscordAvatar.svelte';
 	import ProgressionSparkline from '$lib/components/ProgressionSparkline.svelte';
 
 	let { data } = $props();
@@ -63,7 +64,16 @@
 								</td>
 
 								<th scope="row">
-									{standing.name}
+									<span class="participant">
+										<DiscordAvatar
+											discordId={standing.id}
+											avatarSnapshotSha256={standing.avatarSnapshotSha256}
+											size={32}
+											alt=""
+										/>
+
+										<span>{standing.name}</span>
+									</span>
 								</th>
 
 								<td class="score">
@@ -98,3 +108,11 @@
 		</section>
 	{/if}
 </main>
+
+<style>
+	.participant {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+</style>

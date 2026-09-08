@@ -18,7 +18,7 @@
 		}
 		return null;
 	});
-	const locked = $derived(remaining ? remaining <= 0 : false);
+	const locked = $derived(remaining !== null ? remaining <= 0 : false);
 
 	const localString = $derived(
 		browser && parsedLockTime
@@ -37,7 +37,7 @@
 
 	const relativeString = $derived.by(() => {
 		if (locked) return 'Submissions locked';
-		if (!remaining) return 'Invalid date for weekend';
+		if (remaining === null) return 'Invalid date for weekend';
 		const minutes = Math.floor(remaining / 60_000);
 		const hours = Math.floor(minutes / 60);
 		const days = Math.floor(hours / 24);

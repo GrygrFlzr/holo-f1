@@ -18,7 +18,7 @@
 	const reserveDrivers = $derived(drivers.filter((d) => d.category === 'reserve'));
 </script>
 
-<div>
+<div class="driver-field">
 	<label for={id}>{label}</label>
 	<select {id} {name} required>
 		<option value="" disabled selected={!selectedId}>Select a driver…</option>
@@ -40,13 +40,30 @@
 </div>
 
 <style>
-	div {
+	.driver-field {
 		display: flex;
+		flex: 1 1 14rem;
 		flex-direction: column;
-		row-gap: 0.25rem;
+		gap: var(--space-2);
+		min-width: min(100%, 14rem);
 	}
+
+	label {
+		font-weight: 700;
+	}
+
 	select {
-		padding: 0.25rem 0.5rem;
-		font-family: inherit;
+		width: 100%;
+		min-height: 2.75rem;
+		padding-inline: var(--space-3);
+		border: 1px solid var(--rule);
+		background: var(--surface);
+		color: var(--ink);
+		font: inherit;
+	}
+
+	select:focus-visible {
+		outline: 3px solid var(--accent);
+		outline-offset: 2px;
 	}
 </style>

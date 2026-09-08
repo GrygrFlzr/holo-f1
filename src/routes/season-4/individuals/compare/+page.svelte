@@ -75,7 +75,7 @@
 					<article class="selected-participant" style:border-inline-start-color={item.color}>
 						<div class="participant-identity">
 							<DiscordAvatar
-								discordId={item.id}
+								defaultAvatarIndex={item.defaultAvatarIndex}
 								avatarSnapshotSha256={item.avatarSnapshotSha256}
 								size={40}
 								alt=""

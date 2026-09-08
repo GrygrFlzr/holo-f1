@@ -53,7 +53,10 @@ export const handle = (async ({ event, resolve }) => {
 							path: '/'
 						});
 					} else {
-						event.locals.user = user;
+						event.locals.user = {
+							...user,
+							public_id: session.user.public_id
+						};
 					}
 				} catch (cause) {
 					console.error('Failed to resolve session user.', cause);
@@ -89,7 +92,10 @@ export const handle = (async ({ event, resolve }) => {
 							maxAge: remainingLifetime
 						});
 
-						event.locals.user = resolved.user;
+						event.locals.user = {
+							...resolved.user,
+							public_id: resolved.public_id
+						};
 					}
 				} catch (cause) {
 					console.error('Failed to upgrade version 2 session cookie.', cause);
@@ -125,7 +131,10 @@ export const handle = (async ({ event, resolve }) => {
 							maxAge: remainingLifetime
 						});
 
-						event.locals.user = resolved.user;
+						event.locals.user = {
+							...resolved.user,
+							public_id: resolved.public_id
+						};
 					}
 				} catch (cause) {
 					console.error('Failed to upgrade version 1 session cookie.', cause);

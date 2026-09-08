@@ -13,6 +13,7 @@ export interface IndividualComparisonSeries {
 	id: string;
 	name: string;
 	avatarSnapshotSha256: string | null;
+	defaultAvatarIndex: number;
 	totalPoints: number;
 	color: string;
 	history: readonly StandingPoint[];
@@ -70,6 +71,7 @@ export function buildIndividualComparisonSeries(
 			id: standing.id,
 			name: standing.name,
 			avatarSnapshotSha256: standing.avatarSnapshotSha256,
+			defaultAvatarIndex: standing.defaultAvatarIndex,
 			totalPoints: standing.totalPoints,
 			color: COMPARISON_COLORS[series.length],
 			history: standing.history

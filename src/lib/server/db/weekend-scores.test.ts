@@ -54,9 +54,10 @@ function createSubmission(
 	overrides: Partial<WeekendScoreSubmissionRow> = {}
 ): WeekendScoreSubmissionRow {
 	return {
-		user_id: 'TODO_TEST_DISCORD_ID',
+		user_id: 'TODO_TEST_PUBLIC_ID',
 		user_name: 'TODO_TEST_PARTICIPANT',
 		user_avatar_snapshot_sha256: null,
+		user_default_avatar_index: 5,
 		sprint_pole_driver_id: TODO_TEST_DRIVER_IDS.sprintPole,
 		sprint_p1_driver_id: TODO_TEST_DRIVER_IDS.sprintP1,
 		pole_driver_id: TODO_TEST_DRIVER_IDS.pole,
@@ -99,8 +100,9 @@ describe('published weekend score details', () => {
 		const entry = details.entries[0];
 
 		expect(entry).toMatchObject({
-			userId: 'TODO_TEST_DISCORD_ID',
+			userId: 'TODO_TEST_PUBLIC_ID',
 			userName: 'TODO_TEST_PARTICIPANT',
+			defaultAvatarIndex: 5,
 			boldPrediction: 'TODO_TEST_BOLD_PREDICTION',
 			boldAwarded: true,
 			score: {

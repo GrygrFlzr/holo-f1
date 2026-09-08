@@ -1,4 +1,6 @@
 import type { D1Queryable } from '$lib/server/db/types';
+import { getDiscordDefaultAvatarIndex } from '$lib/server/discord';
+import { isPublicId } from '$lib/server/public-id';
 
 export interface Submission {
 	sprint_pole_driver_id: number | null;
@@ -28,8 +30,10 @@ export interface SubmissionInput {
 
 export interface StewardSubmission extends Submission {
 	discord_id: string;
+	public_id: string;
 	discord_name: string;
 	avatar_snapshot_sha256: string | null;
+	default_avatar_index: number;
 	sprint_pole_code: string | null;
 	sprint_p1_code: string | null;
 	pole_code: string;
@@ -42,6 +46,13 @@ export interface StewardSubmission extends Submission {
 	team_name: string;
 	team_color: string;
 	updated_at: string;
+}
+
+interface StewardSubmissionRow extends Omit<
+	StewardSubmission,
+	'public_id' | 'default_avatar_index'
+> {
+	public_id: string | null;
 }
 
 export async function getSubmission(
@@ -75,11 +86,12 @@ export async function getSubmissionsForScoring(
 	db: D1Queryable,
 	weekendId: number
 ): Promise<StewardSubmission[]> {
-	const { results } = await db
+	const { results: rows } = await db
 		.prepare(
 			`
 			select
 				u.discord_id,
+				u.public_id,
 				u.discord_name,
 				u.avatar_snapshot_sha256,
 
@@ -134,9 +146,19 @@ export async function getSubmissionsForScoring(
 			`
 		)
 		.bind(weekendId)
-		.all<StewardSubmission>();
+		.all<StewardSubmissionRow>();
 
-	return results;
+	return rows.map((row): StewardSubmission => {
+		if (!isPublicId(row.public_id)) {
+			throw new Error('A steward submission user has no valid public ID.');
+		}
+
+		return {
+			...row,
+			public_id: row.public_id,
+			default_avatar_index: getDiscordDefaultAvatarIndex(row.discord_id)
+		};
+	});
 }
 
 export async function upsertSubmission(

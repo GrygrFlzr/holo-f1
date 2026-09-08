@@ -5,6 +5,7 @@ declare global {
 		// interface Error {}
 		interface Locals {
 			user: {
+				public_id?: string;
 				discord_id: string;
 				display_name: string;
 				avatar_hash: string | null;

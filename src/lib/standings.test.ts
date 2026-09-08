@@ -42,6 +42,7 @@ const BASE_ENTRY: EntryFixture = {
 	userId: 'TEST_USER_A',
 	userName: 'TEST_PARTICIPANT_A',
 	userAvatarSnapshotSha256: null,
+	userDefaultAvatarIndex: 0,
 	teamId: 80_001,
 	teamName: 'TEST_TEAM_A',
 	teamColor: null,

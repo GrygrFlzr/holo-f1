@@ -120,7 +120,7 @@
 									<span class="score-summary" class:regular-weekend={!data.weekend.isSprint}>
 										<span class="participant">
 											<DiscordAvatar
-												discordId={entry.userId}
+												defaultAvatarIndex={entry.defaultAvatarIndex}
 												avatarSnapshotSha256={entry.userAvatarSnapshotSha256}
 												size={32}
 												alt=""

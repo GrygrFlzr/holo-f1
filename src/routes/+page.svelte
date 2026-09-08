@@ -26,7 +26,7 @@
 			{#if data.user}
 				<div class="account">
 					<DiscordAvatar
-						discordId={data.user.discord_id}
+						defaultAvatarIndex={data.user.default_avatar_index}
 						avatarSnapshotSha256={data.user.avatar_snapshot_sha256}
 						size={40}
 						alt=""

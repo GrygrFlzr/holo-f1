@@ -177,11 +177,11 @@
 						</thead>
 
 						<tbody>
-							{#each data.entries as entry (entry.discord_id)}
+							{#each data.entries as entry (entry.public_id)}
 								<tr>
 									<td class="avatar-cell">
 										<DiscordAvatar
-											discordId={entry.discord_id}
+											defaultAvatarIndex={entry.default_avatar_index}
 											avatarSnapshotSha256={entry.avatar_snapshot_sha256}
 											size={40}
 											alt=""
@@ -320,9 +320,9 @@
 						<input type="hidden" name="weekend_id" value={data.weekend.id} />
 
 						<ul class="bold-reviews">
-							{#each boldEntries as entry (entry.discord_id)}
+							{#each boldEntries as entry (entry.public_id)}
 								<li>
-									<input type="hidden" name="reviewed_user_id" value={entry.discord_id} />
+									<input type="hidden" name="reviewed_public_id" value={entry.public_id} />
 
 									<div class="bold-content">
 										<strong>
@@ -336,8 +336,8 @@
 									<label class="bold-award">
 										<input
 											type="checkbox"
-											name="awarded_user_id"
-											value={entry.discord_id}
+											name="awarded_public_id"
+											value={entry.public_id}
 											checked={entry.boldReview?.awarded === 1}
 										/>
 										<span>Award bold point</span>

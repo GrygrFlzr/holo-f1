@@ -113,7 +113,7 @@
 								<th scope="row">
 									<span class="participant">
 										<DiscordAvatar
-											discordId={standing.id}
+											defaultAvatarIndex={standing.defaultAvatarIndex}
 											avatarSnapshotSha256={standing.avatarSnapshotSha256}
 											size={32}
 											alt=""
@@ -180,7 +180,7 @@
 								{#each selectedParticipants as standing (standing.id)}
 									<li>
 										<DiscordAvatar
-											discordId={standing.id}
+											defaultAvatarIndex={standing.defaultAvatarIndex}
 											avatarSnapshotSha256={standing.avatarSnapshotSha256}
 											size={24}
 											alt=""

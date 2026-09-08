@@ -1,5 +1,7 @@
 import type { WeekendResult } from '$lib/server/db/results';
 import type { D1Queryable } from '$lib/server/db/types';
+import { getDiscordDefaultAvatarIndex } from '$lib/server/discord';
+import { isPublicId } from '$lib/server/public-id';
 import { scoreSubmission } from '$lib/server/scoring';
 import {
 	buildSeasonStandings,
@@ -16,7 +18,8 @@ interface WeekendRow {
 }
 
 interface StandingRow {
-	user_id: string;
+	discord_id: string;
+	public_id: string | null;
 	user_name: string;
 	user_avatar_snapshot_sha256: string | null;
 	weekend_id: number;
@@ -102,7 +105,8 @@ export async function getSeasonStandings(
 		.prepare(
 			`
 			select
-				s.user_id,
+				s.user_id as discord_id,
+				u.public_id,
 				u.discord_name as user_name,
 				u.avatar_snapshot_sha256 as user_avatar_snapshot_sha256,
 				s.weekend_id,
@@ -167,13 +171,18 @@ export async function getSeasonStandings(
 		.all<StandingRow>();
 
 	const entries: ScoredStandingEntry[] = rows.map((row) => {
+		if (!isPublicId(row.public_id)) {
+			throw new Error('A scored submission user has no valid public ID.');
+		}
+
 		const score = scoreSubmission(row, resultFromRow(row), row.bold_awarded === 1);
 
 		return {
 			weekendId: row.weekend_id,
-			userId: row.user_id,
+			userId: row.public_id,
 			userName: row.user_name,
 			userAvatarSnapshotSha256: row.user_avatar_snapshot_sha256,
+			userDefaultAvatarIndex: getDiscordDefaultAvatarIndex(row.discord_id),
 			teamId: row.team_id,
 			teamName: row.team_name,
 			teamColor: row.team_color,

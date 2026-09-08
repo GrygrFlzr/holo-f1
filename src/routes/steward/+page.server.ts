@@ -17,6 +17,7 @@ import {
 	publishWeekend,
 	type Weekend
 } from '$lib/server/db/weekends';
+import { isPublicId } from '$lib/server/public-id';
 import { scoreSubmission } from '$lib/server/scoring';
 import { parseDateTime } from '$lib/time';
 import type { Actions, PageServerLoad } from './$types';
@@ -152,6 +153,20 @@ function parseResultForm(formData: FormData, isSprint: boolean): ParsedResult {
 	};
 }
 
+function parsePublicIds(values: FormDataEntryValue[]): string[] | null {
+	const publicIds: string[] = [];
+
+	for (const value of values) {
+		if (!isPublicId(value)) {
+			return null;
+		}
+
+		publicIds.push(value);
+	}
+
+	return publicIds;
+}
+
 function isWeekendLocked(weekend: Weekend): boolean {
 	const parsedLockTime = parseDateTime(weekend.lock_time);
 
@@ -268,11 +283,16 @@ export const load = (async ({ locals, url }) => {
 	const reviewsByUserId = new Map(reviews.map((review) => [review.user_id, review]));
 
 	const entriesWithScores = entries.map((entry) => {
-		const boldReview = reviewsByUserId.get(entry.discord_id) ?? null;
+		const { discord_id: privateUserId, ...publicEntry } = entry;
+		const boldReview = reviewsByUserId.get(privateUserId) ?? null;
 
 		return {
-			...entry,
-			boldReview,
+			...publicEntry,
+			boldReview: boldReview
+				? {
+						awarded: boldReview.awarded
+					}
+				: null,
 			scorePreview: result ? scoreSubmission(entry, result, boldReview?.awarded === 1) : null
 		};
 	});
@@ -419,15 +439,13 @@ export const actions = {
 		}
 
 		const entries = await getSubmissionsForScoring(db, weekend.id);
-		const requiredUserIds = entries.filter(hasBoldPrediction).map((entry) => entry.discord_id);
+		const requiredEntries = entries.filter(hasBoldPrediction);
+		const requiredPublicIds = requiredEntries.map((entry) => entry.public_id);
 
-		const rawReviewedUserIds = formData.getAll('reviewed_user_id');
-		const rawAwardedUserIds = formData.getAll('awarded_user_id');
+		const reviewedPublicIdValues = parsePublicIds(formData.getAll('reviewed_public_id'));
+		const awardedPublicIdValues = parsePublicIds(formData.getAll('awarded_public_id'));
 
-		if (
-			rawReviewedUserIds.some((value) => typeof value !== 'string') ||
-			rawAwardedUserIds.some((value) => typeof value !== 'string')
-		) {
+		if (reviewedPublicIdValues === null || awardedPublicIdValues === null) {
 			return fail(400, {
 				ok: false,
 				action: 'saveBoldReviews',
@@ -435,12 +453,12 @@ export const actions = {
 			});
 		}
 
-		const reviewedUserIds = new Set(rawReviewedUserIds as string[]);
-		const awardedUserIds = new Set(rawAwardedUserIds as string[]);
+		const reviewedPublicIds = new Set(reviewedPublicIdValues);
+		const awardedPublicIds = new Set(awardedPublicIdValues);
 
 		if (
-			reviewedUserIds.size !== requiredUserIds.length ||
-			requiredUserIds.some((userId) => !reviewedUserIds.has(userId))
+			reviewedPublicIds.size !== requiredPublicIds.length ||
+			requiredPublicIds.some((publicId) => !reviewedPublicIds.has(publicId))
 		) {
 			return fail(400, {
 				ok: false,
@@ -449,7 +467,7 @@ export const actions = {
 			});
 		}
 
-		if ([...awardedUserIds].some((userId) => !reviewedUserIds.has(userId))) {
+		if ([...awardedPublicIds].some((publicId) => !reviewedPublicIds.has(publicId))) {
 			return fail(400, {
 				ok: false,
 				action: 'saveBoldReviews',
@@ -460,9 +478,9 @@ export const actions = {
 		await upsertBoldReviews(
 			db,
 			weekend.id,
-			requiredUserIds.map((userId) => ({
-				user_id: userId,
-				awarded: awardedUserIds.has(userId) ? 1 : 0
+			requiredEntries.map((entry) => ({
+				user_id: entry.discord_id,
+				awarded: awardedPublicIds.has(entry.public_id) ? 1 : 0
 			}))
 		);
 

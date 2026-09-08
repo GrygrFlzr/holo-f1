@@ -4,6 +4,8 @@ import type { WeekendResult } from '$lib/server/db/results';
 import { getWeekendResult } from '$lib/server/db/results';
 import type { Submission } from '$lib/server/db/submissions';
 import type { D1Queryable } from '$lib/server/db/types';
+import { getDiscordDefaultAvatarIndex } from '$lib/server/discord';
+import { isPublicId } from '$lib/server/public-id';
 import {
 	RACE_PREDICTIONS,
 	scoreSubmission,
@@ -58,6 +60,18 @@ export interface WeekendScoreSubmissionRow extends Submission {
 	user_id: string;
 	user_name: string;
 	user_avatar_snapshot_sha256: string | null;
+	user_default_avatar_index: number;
+	team_id: number;
+	team_name: string;
+	team_color: string | null;
+	bold_awarded: number;
+}
+
+interface WeekendScoreSubmissionDatabaseRow extends Submission {
+	discord_id: string;
+	public_id: string | null;
+	user_name: string;
+	user_avatar_snapshot_sha256: string | null;
 	team_id: number;
 	team_name: string;
 	team_color: string | null;
@@ -68,6 +82,7 @@ export interface PublishedWeekendScoreEntry {
 	userId: string;
 	userName: string;
 	userAvatarSnapshotSha256: string | null;
+	defaultAvatarIndex: number;
 	team: {
 		id: number;
 		name: string;
@@ -155,6 +170,7 @@ export function buildPublishedWeekendScoreDetails(
 				userId: row.user_id,
 				userName: row.user_name,
 				userAvatarSnapshotSha256: row.user_avatar_snapshot_sha256,
+				defaultAvatarIndex: row.user_default_avatar_index,
 				team: {
 					id: row.team_id,
 					name: row.team_name,
@@ -258,11 +274,12 @@ export async function getPublishedWeekendScores(
 
 	const drivers = await getAllDrivers(db);
 
-	const { results: submissionRows } = await db
+	const { results: databaseRows } = await db
 		.prepare(
 			`
 			select
-				s.user_id,
+				s.user_id as discord_id,
+				u.public_id,
 				u.discord_name as user_name,
 				u.avatar_snapshot_sha256
 					as user_avatar_snapshot_sha256,
@@ -303,7 +320,33 @@ export async function getPublishedWeekendScores(
 			`
 		)
 		.bind(season, weekend.id)
-		.all<WeekendScoreSubmissionRow>();
+		.all<WeekendScoreSubmissionDatabaseRow>();
+
+	const submissionRows: WeekendScoreSubmissionRow[] = databaseRows.map((row) => {
+		if (!isPublicId(row.public_id)) {
+			throw new Error('A published submission user has no valid public ID.');
+		}
+
+		return {
+			user_id: row.public_id,
+			user_name: row.user_name,
+			user_avatar_snapshot_sha256: row.user_avatar_snapshot_sha256,
+			user_default_avatar_index: getDiscordDefaultAvatarIndex(row.discord_id),
+			sprint_pole_driver_id: row.sprint_pole_driver_id,
+			sprint_p1_driver_id: row.sprint_p1_driver_id,
+			pole_driver_id: row.pole_driver_id,
+			p1_driver_id: row.p1_driver_id,
+			p2_driver_id: row.p2_driver_id,
+			p3_driver_id: row.p3_driver_id,
+			p10_driver_id: row.p10_driver_id,
+			dotd_driver_id: row.dotd_driver_id,
+			bold_prediction: row.bold_prediction,
+			team_id: row.team_id,
+			team_name: row.team_name,
+			team_color: row.team_color,
+			bold_awarded: row.bold_awarded
+		};
+	});
 
 	const details = buildPublishedWeekendScoreDetails(weekend, result, drivers, submissionRows);
 

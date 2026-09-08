@@ -27,6 +27,7 @@ function createStanding(id: string, index: number): IndividualStanding {
 		id,
 		name: `TODO_TEST_NAME_${index}`,
 		avatarSnapshotSha256: null,
+		defaultAvatarIndex: index % 6,
 		rank: index + 1,
 		totalPoints: TODO_TEST_TOTAL_POINTS,
 		participation: 1,

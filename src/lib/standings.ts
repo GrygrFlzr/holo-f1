@@ -27,6 +27,7 @@ export interface IndividualStanding extends RankingMetrics {
 	id: string;
 	name: string;
 	avatarSnapshotSha256: string | null;
+	defaultAvatarIndex: number;
 	rank: number;
 	history: StandingPoint[];
 }
@@ -51,6 +52,7 @@ export interface ScoredStandingEntry {
 	userId: string;
 	userName: string;
 	userAvatarSnapshotSha256: string | null;
+	userDefaultAvatarIndex: number;
 	teamId: number;
 	teamName: string;
 	teamColor: string | null;
@@ -72,6 +74,7 @@ interface IndividualAccumulator extends BaseAccumulator {
 	id: string;
 	name: string;
 	avatarSnapshotSha256: string | null;
+	defaultAvatarIndex: number;
 }
 
 interface TeamAccumulator extends BaseAccumulator {
@@ -210,7 +213,8 @@ export function buildSeasonStandings(
 				...createBaseAccumulator(),
 				id: entry.userId,
 				name: entry.userName,
-				avatarSnapshotSha256: entry.userAvatarSnapshotSha256
+				avatarSnapshotSha256: entry.userAvatarSnapshotSha256,
+				defaultAvatarIndex: entry.userDefaultAvatarIndex
 			};
 
 			individualsById.set(entry.userId, individual);
@@ -239,6 +243,7 @@ export function buildSeasonStandings(
 			id: individual.id,
 			name: individual.name,
 			avatarSnapshotSha256: individual.avatarSnapshotSha256,
+			defaultAvatarIndex: individual.defaultAvatarIndex,
 			totalPoints: individual.totalPoints,
 			participation: individual.participation,
 			boldPoints: individual.boldPoints,

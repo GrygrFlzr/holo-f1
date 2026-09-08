@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { resolve } from '$app/paths';
+	import DiscordAvatar from '$lib/components/DiscordAvatar.svelte';
 	import { parseDateTime } from '$lib/time';
 	import { SvelteDate } from 'svelte/reactivity';
 	import DriverSelect from './DriverSelect.svelte';
@@ -62,23 +63,12 @@
 					your predictions.
 				</p>
 			{:else}
-				{const baseSize = 32}
-				{const baseImage = $derived(
-					user.avatar_hash
-						? `https://cdn.discordapp.com/avatars/${user.discord_id}/${user.avatar_hash}.webp`
-						: `https://cdn.discordapp.com/embed/avatars/${(BigInt(user.discord_id) >> 22n) % 6n}.png`
-				)}
-				<img
-					class="avatar"
-					alt="{user.display_name}'s Avatar"
-					srcset={[
-						[`${baseImage}?size=${baseSize * 1}`, '1x'],
-						[`${baseImage}?size=${baseSize * 2}`, '2x'],
-						[`${baseImage}?size=${baseSize * 3}`, '3x']
-					]
-						.map(([url, dpi]) => `${url} ${dpi}`)
-						.join(', ')}
-					src="{baseImage}?size=${baseSize}"
+				<DiscordAvatar
+					defaultAvatarIndex={user.default_avatar_index}
+					avatarSnapshotSha256={user.avatar_snapshot_sha256}
+					size={32}
+					alt={`${user.display_name}'s Avatar`}
+					bordered={false}
 				/>
 				<span class="user-name">{user.display_name}</span>
 				<span class="filler"></span>
@@ -255,36 +245,38 @@
 		max-width: 80ch;
 		margin: 0 auto;
 	}
+
 	nav {
 		display: flex;
 		align-items: center;
 	}
-	.avatar {
-		width: 32px;
-		height: 32px;
-		border-radius: 50%;
-	}
+
 	.user-name {
 		margin-left: 0.5rem;
 	}
+
 	.team-name {
 		border: 1px solid var(--team-color);
 		padding: 0 0.25rem;
 		border-radius: 4px;
 	}
+
 	.filler {
 		flex-grow: 1;
 	}
+
 	.button {
 		padding: 0.5rem 1rem;
 		border-radius: 4px;
 		transition: color 0.1s linear;
 		text-decoration: none;
 	}
+
 	.discord {
 		background-color: var(--discord-blurple);
 		color: var(--discord-light-blurple);
 	}
+
 	.discord.button:hover {
 		background-color: oklch(from var(--discord-blurple) l c h / 90%);
 	}
@@ -316,9 +308,11 @@
 		border: 1px solid light-dark(oklch(14.5% 0 0), oklch(98.5% 0 0));
 		padding-bottom: 1rem;
 	}
+
 	.inner-fieldset + .inner-fieldset {
 		margin-top: 1rem;
 	}
+
 	.fieldset-items {
 		display: flex;
 		flex-direction: column;
@@ -341,7 +335,6 @@
 	.btn-danger-subtle {
 		background: none;
 		border: none;
-		/* color: var(--color-muted); */
 		cursor: pointer;
 		font-size: 0.875rem;
 		text-decoration: underline;

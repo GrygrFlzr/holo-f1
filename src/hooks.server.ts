@@ -1,5 +1,10 @@
 import type { Handle, ResolveOptions } from '@sveltejs/kit';
-import { createSessionCookie, SESSION_COOKIE, verifySessionCookie } from '$lib/server/auth';
+import {
+	createSessionCookie,
+	resolvePublicIdSessionUser,
+	SESSION_COOKIE,
+	verifySessionCookie
+} from '$lib/server/auth';
 import { createSession } from '$lib/server/db/session';
 
 interface AvatarSnapshotRow {
@@ -41,7 +46,21 @@ export const handle = (async ({ event, resolve }) => {
 		if (cookie) {
 			const session = await verifySessionCookie(cookie, env.AUTH_SECRET);
 
-			if (session?.schemaVersion === 2) {
+			if (session?.schemaVersion === 3) {
+				try {
+					const user = await resolvePublicIdSessionUser(dbSession, session.user);
+
+					if (!user) {
+						event.cookies.delete(SESSION_COOKIE, {
+							path: '/'
+						});
+					} else {
+						event.locals.user = user;
+					}
+				} catch (cause) {
+					console.error('Failed to resolve session user.', cause);
+				}
+			} else if (session?.schemaVersion === 2) {
 				event.locals.user = session.user;
 			} else if (session?.schemaVersion === 1) {
 				try {
@@ -61,9 +80,12 @@ export const handle = (async ({ event, resolve }) => {
 							path: '/'
 						});
 					} else {
-						const user = {
-							...session.user,
-							avatar_snapshot_sha256: row.avatar_snapshot_sha256
+						const user: NonNullable<App.Locals['user']> = {
+							discord_id: session.user.discord_id,
+							display_name: session.user.display_name,
+							avatar_hash: session.user.avatar_hash,
+							avatar_snapshot_sha256: row.avatar_snapshot_sha256,
+							role: session.user.role
 						};
 
 						const replacement = await createSessionCookie(
@@ -93,7 +115,13 @@ export const handle = (async ({ event, resolve }) => {
 				} catch (cause) {
 					console.error('Failed to upgrade session cookie.', cause);
 
-					event.locals.user = session.user;
+					event.locals.user = {
+						discord_id: session.user.discord_id,
+						display_name: session.user.display_name,
+						avatar_hash: session.user.avatar_hash,
+						avatar_snapshot_sha256: null,
+						role: session.user.role
+					};
 				}
 			}
 		}

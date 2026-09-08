@@ -2,6 +2,7 @@ import { error, redirect } from '@sveltejs/kit';
 import { AUTH_SECRET, DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET } from '$app/env/private';
 import { createSessionCookie, SESSION_COOKIE, SESSION_MAX_AGE_SECONDS } from '$lib/server/auth';
 import { resolveDiscordAvatarSnapshot } from '$lib/server/avatar-snapshots';
+import { createPublicId } from '$lib/server/public-id';
 import type { RequestHandler } from './$types';
 
 interface TokenResponse {
@@ -98,17 +99,22 @@ export const GET = (async ({ url, locals, cookies, platform }) => {
 	}
 
 	const discordName = discordUser.global_name ?? discordUser.username;
+	const candidatePublicId = createPublicId();
+
 	await db
 		.prepare(
 			`
 			insert into users (
+				public_id,
 				discord_id,
 				discord_name,
 				avatar_hash,
 				avatar_snapshot_sha256
 			)
-			values (?, ?, ?, ?)
+			values (?, ?, ?, ?, ?)
 			on conflict (discord_id) do update set
+				public_id =
+					coalesce(users.public_id, excluded.public_id),
 				discord_name =
 					excluded.discord_name,
 				avatar_hash =
@@ -117,32 +123,37 @@ export const GET = (async ({ url, locals, cookies, platform }) => {
 					excluded.avatar_snapshot_sha256
 			`
 		)
-		.bind(discordUser.id, discordName, discordUser.avatar, avatarSnapshot.sha256)
+		.bind(candidatePublicId, discordUser.id, discordName, discordUser.avatar, avatarSnapshot.sha256)
 		.run();
 
-	// read role and custom_name
+	// read public_id, role, and custom_name
 	const row = await db
 		.prepare(
 			`
-			select role, custom_name
+			select public_id, role, custom_name
 			from users
 			where discord_id = ?
 			`
 		)
 		.bind(discordUser.id)
 		.first<{
+			public_id: string | null;
 			role: string;
 			custom_name: string | null;
 		}>();
+
+	if (!row?.public_id) {
+		error(500, 'Public ID not assigned');
+	}
 
 	// set cookie
 	const session = await createSessionCookie(
 		{
 			sub: discordUser.id,
-			name: row?.custom_name ?? discordName,
+			name: row.custom_name ?? discordName,
 			avatar: discordUser.avatar,
 			avatar_snapshot_sha256: avatarSnapshot.sha256,
-			role: (row?.role ?? 'user') as 'user' | 'steward' | 'admin'
+			role: row.role as 'user' | 'steward' | 'admin'
 		},
 		AUTH_SECRET
 	);

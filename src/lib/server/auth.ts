@@ -12,8 +12,8 @@ const ROLE_LEVEL: Record<string, number> = {
 } as const;
 
 export const SESSION_COOKIE = 'session' as const;
-export const SESSION_SCHEMA_VERSION = 2 as const;
-const PUBLIC_ID_SESSION_SCHEMA_VERSION = 3 as const;
+const SESSION_SCHEMA_VERSION_V2 = 2 as const;
+export const SESSION_SCHEMA_VERSION = 3 as const;
 export const SESSION_MAX_AGE_SECONDS = 2_592_000 as const;
 
 export type SessionRole = 'user' | 'steward' | 'admin';
@@ -29,19 +29,19 @@ interface SessionPayloadFields {
 type SessionPayloadV1 = SessionPayloadFields;
 
 interface SessionPayloadV2 extends SessionPayloadFields {
-	sv: typeof SESSION_SCHEMA_VERSION;
+	sv: typeof SESSION_SCHEMA_VERSION_V2;
 	avatar_snapshot_sha256: string | null;
 }
 
 interface SessionPayloadV3 extends SessionPayloadFields {
-	sv: typeof PUBLIC_ID_SESSION_SCHEMA_VERSION;
+	sv: typeof SESSION_SCHEMA_VERSION;
 	avatar_snapshot_sha256: string | null;
 }
 
-export interface SessionCookieUserV2 {
-	sub: string;
-	name: string;
-	avatar: string | null;
+export interface SessionCookieUserV3 {
+	public_id: string;
+	display_name: string;
+	avatar_hash: string | null;
 	avatar_snapshot_sha256: string | null;
 	role: SessionRole;
 }
@@ -102,6 +102,11 @@ type DecodedSessionPayload =
 			payload: SessionPayloadV3;
 	  };
 
+interface ResolvedLegacySessionUser {
+	public_id: string;
+	user: AuthenticatedUser;
+}
+
 /**
  * Re-derived per session.
  */
@@ -109,10 +114,7 @@ async function getKey(secret: string): Promise<CryptoKey> {
 	return crypto.subtle.importKey(
 		'raw',
 		encoder.encode(secret),
-		{
-			name: 'HMAC',
-			hash: 'SHA-256'
-		},
+		{ name: 'HMAC', hash: 'SHA-256' },
 		false,
 		['sign', 'verify']
 	);
@@ -125,17 +127,18 @@ function toBase64Url(bytes: Uint8Array): string {
 		.replaceAll(/=/g, '');
 }
 
-function fromBase64Url(value: string): Uint8Array<ArrayBuffer> {
+function fromBase64Url(value: string): ArrayBuffer {
 	const normalized = value.replaceAll(/-/g, '+').replaceAll(/_/g, '/');
 	const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, '=');
 	const binary = atob(padded);
-	const bytes = new Uint8Array(new ArrayBuffer(binary.length));
+	const buffer = new ArrayBuffer(binary.length);
+	const bytes = new Uint8Array(buffer);
 
 	for (let index = 0; index < binary.length; index += 1) {
 		bytes[index] = binary.charCodeAt(index);
 	}
 
-	return bytes;
+	return buffer;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -181,7 +184,7 @@ function decodeSessionPayload(value: unknown): DecodedSessionPayload | null {
 		};
 	}
 
-	if (value.sv === SESSION_SCHEMA_VERSION) {
+	if (value.sv === SESSION_SCHEMA_VERSION_V2) {
 		if (!Object.hasOwn(value, 'avatar_snapshot_sha256')) {
 			return null;
 		}
@@ -195,7 +198,7 @@ function decodeSessionPayload(value: unknown): DecodedSessionPayload | null {
 		return {
 			schemaVersion: 2,
 			payload: {
-				sv: SESSION_SCHEMA_VERSION,
+				sv: SESSION_SCHEMA_VERSION_V2,
 				sub: value.sub,
 				name: value.name,
 				avatar: value.avatar,
@@ -206,7 +209,7 @@ function decodeSessionPayload(value: unknown): DecodedSessionPayload | null {
 		};
 	}
 
-	if (value.sv === PUBLIC_ID_SESSION_SCHEMA_VERSION) {
+	if (value.sv === SESSION_SCHEMA_VERSION) {
 		if (!isPublicId(value.sub) || !Object.hasOwn(value, 'avatar_snapshot_sha256')) {
 			return null;
 		}
@@ -220,7 +223,7 @@ function decodeSessionPayload(value: unknown): DecodedSessionPayload | null {
 		return {
 			schemaVersion: 3,
 			payload: {
-				sv: PUBLIC_ID_SESSION_SCHEMA_VERSION,
+				sv: SESSION_SCHEMA_VERSION,
 				sub: value.sub,
 				name: value.name,
 				avatar: value.avatar,
@@ -235,12 +238,16 @@ function decodeSessionPayload(value: unknown): DecodedSessionPayload | null {
 }
 
 export async function createSessionCookie(
-	user: SessionCookieUserV2,
+	user: SessionCookieUserV3,
 	secret: string,
 	expiresAt: number = Math.floor(Date.now() / 1_000) + SESSION_MAX_AGE_SECONDS
 ): Promise<string> {
 	if (!Number.isSafeInteger(expiresAt)) {
 		throw new TypeError('Session expiration must be a safe integer.');
+	}
+
+	if (!isPublicId(user.public_id)) {
+		throw new TypeError('Public ID must be a canonical lowercase UUIDv4.');
 	}
 
 	if (
@@ -250,9 +257,13 @@ export async function createSessionCookie(
 		throw new TypeError('Avatar snapshot digest must be 64-character lowercase hexadecimal text.');
 	}
 
-	const payload: SessionPayloadV2 = {
+	const payload: SessionPayloadV3 = {
 		sv: SESSION_SCHEMA_VERSION,
-		...user,
+		sub: user.public_id,
+		name: user.display_name,
+		avatar: user.avatar_hash,
+		avatar_snapshot_sha256: user.avatar_snapshot_sha256,
+		role: user.role,
 		exp: expiresAt
 	};
 
@@ -341,6 +352,83 @@ export async function verifySessionCookie(
 	} catch {
 		return null;
 	}
+}
+
+interface LegacySessionUserV1Row {
+	public_id: string | null;
+	avatar_snapshot_sha256: string | null;
+}
+
+export async function resolveLegacySessionUserV1(
+	db: NonNullable<App.Locals['db']>,
+	user: VerifiedSessionUserV1
+): Promise<ResolvedLegacySessionUser | null> {
+	const row = await db
+		.prepare(
+			`
+			select
+				public_id,
+				avatar_snapshot_sha256
+			from users
+			where discord_id = ?
+			`
+		)
+		.bind(user.discord_id)
+		.first<LegacySessionUserV1Row>();
+
+	if (!row || !isPublicId(row.public_id)) {
+		return null;
+	}
+
+	if (row.avatar_snapshot_sha256 !== null && !isAvatarSnapshotSha256(row.avatar_snapshot_sha256)) {
+		return null;
+	}
+
+	return {
+		public_id: row.public_id,
+		user: {
+			discord_id: user.discord_id,
+			display_name: user.display_name,
+			avatar_hash: user.avatar_hash,
+			avatar_snapshot_sha256: row.avatar_snapshot_sha256,
+			role: user.role
+		}
+	};
+}
+
+interface LegacySessionUserV2Row {
+	public_id: string | null;
+}
+
+export async function resolveLegacySessionUserV2(
+	db: NonNullable<App.Locals['db']>,
+	user: VerifiedSessionUserV2
+): Promise<ResolvedLegacySessionUser | null> {
+	const row = await db
+		.prepare(
+			`
+			select public_id
+			from users
+			where discord_id = ?
+			`
+		)
+		.bind(user.discord_id)
+		.first<LegacySessionUserV2Row>();
+
+	if (!row || !isPublicId(row.public_id)) {
+		return null;
+	}
+
+	return {
+		public_id: row.public_id,
+		user: {
+			discord_id: user.discord_id,
+			display_name: user.display_name,
+			avatar_hash: user.avatar_hash,
+			avatar_snapshot_sha256: user.avatar_snapshot_sha256,
+			role: user.role
+		}
+	};
 }
 
 interface PublicIdUserRow {

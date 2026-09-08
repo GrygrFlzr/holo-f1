@@ -1,15 +1,13 @@
 import type { Handle, ResolveOptions } from '@sveltejs/kit';
 import {
 	createSessionCookie,
+	resolveLegacySessionUserV1,
+	resolveLegacySessionUserV2,
 	resolvePublicIdSessionUser,
 	SESSION_COOKIE,
 	verifySessionCookie
 } from '$lib/server/auth';
 import { createSession } from '$lib/server/db/session';
-
-interface AvatarSnapshotRow {
-	avatar_snapshot_sha256: string | null;
-}
 
 const preload = ((input) => {
 	switch (input.type) {
@@ -61,40 +59,21 @@ export const handle = (async ({ event, resolve }) => {
 					console.error('Failed to resolve session user.', cause);
 				}
 			} else if (session?.schemaVersion === 2) {
-				event.locals.user = session.user;
-			} else if (session?.schemaVersion === 1) {
 				try {
-					const row = await dbSession
-						.prepare(
-							`
-							select avatar_snapshot_sha256
-							from users
-							where discord_id = ?
-							`
-						)
-						.bind(session.user.discord_id)
-						.first<AvatarSnapshotRow>();
+					const resolved = await resolveLegacySessionUserV2(dbSession, session.user);
 
-					if (!row) {
+					if (!resolved) {
 						event.cookies.delete(SESSION_COOKIE, {
 							path: '/'
 						});
 					} else {
-						const user: NonNullable<App.Locals['user']> = {
-							discord_id: session.user.discord_id,
-							display_name: session.user.display_name,
-							avatar_hash: session.user.avatar_hash,
-							avatar_snapshot_sha256: row.avatar_snapshot_sha256,
-							role: session.user.role
-						};
-
 						const replacement = await createSessionCookie(
 							{
-								sub: user.discord_id,
-								name: user.display_name,
-								avatar: user.avatar_hash,
-								avatar_snapshot_sha256: user.avatar_snapshot_sha256,
-								role: user.role
+								public_id: resolved.public_id,
+								display_name: resolved.user.display_name,
+								avatar_hash: resolved.user.avatar_hash,
+								avatar_snapshot_sha256: resolved.user.avatar_snapshot_sha256,
+								role: resolved.user.role
 							},
 							env.AUTH_SECRET,
 							session.expiresAt
@@ -110,18 +89,46 @@ export const handle = (async ({ event, resolve }) => {
 							maxAge: remainingLifetime
 						});
 
-						event.locals.user = user;
+						event.locals.user = resolved.user;
 					}
 				} catch (cause) {
-					console.error('Failed to upgrade session cookie.', cause);
+					console.error('Failed to upgrade version 2 session cookie.', cause);
+				}
+			} else if (session?.schemaVersion === 1) {
+				try {
+					const resolved = await resolveLegacySessionUserV1(dbSession, session.user);
 
-					event.locals.user = {
-						discord_id: session.user.discord_id,
-						display_name: session.user.display_name,
-						avatar_hash: session.user.avatar_hash,
-						avatar_snapshot_sha256: null,
-						role: session.user.role
-					};
+					if (!resolved) {
+						event.cookies.delete(SESSION_COOKIE, {
+							path: '/'
+						});
+					} else {
+						const replacement = await createSessionCookie(
+							{
+								public_id: resolved.public_id,
+								display_name: resolved.user.display_name,
+								avatar_hash: resolved.user.avatar_hash,
+								avatar_snapshot_sha256: resolved.user.avatar_snapshot_sha256,
+								role: resolved.user.role
+							},
+							env.AUTH_SECRET,
+							session.expiresAt
+						);
+
+						const remainingLifetime = session.expiresAt - Math.floor(Date.now() / 1_000);
+
+						event.cookies.set(SESSION_COOKIE, replacement, {
+							httpOnly: true,
+							secure: event.url.protocol === 'https:',
+							sameSite: 'lax',
+							path: '/',
+							maxAge: remainingLifetime
+						});
+
+						event.locals.user = resolved.user;
+					}
+				} catch (cause) {
+					console.error('Failed to upgrade version 1 session cookie.', cause);
 				}
 			}
 		}

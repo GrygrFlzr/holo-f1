@@ -149,9 +149,9 @@ export const GET = (async ({ url, locals, cookies, platform }) => {
 	// set cookie
 	const session = await createSessionCookie(
 		{
-			sub: discordUser.id,
-			name: row.custom_name ?? discordName,
-			avatar: discordUser.avatar,
+			public_id: row.public_id,
+			display_name: row.custom_name ?? discordName,
+			avatar_hash: discordUser.avatar,
 			avatar_snapshot_sha256: avatarSnapshot.sha256,
 			role: row.role as 'user' | 'steward' | 'admin'
 		},

@@ -344,13 +344,13 @@ export const actions = {
 			});
 		}
 
-		const weekend = await getWeekendForScoring(db, weekendId);
+		const weekend = await getWeekendById(db, weekendId);
 
 		if (!weekend) {
 			return fail(404, {
 				ok: false,
 				action: 'saveResults',
-				message: 'Unscored weekend was not found.'
+				message: 'Weekend was not found.'
 			});
 		}
 
@@ -396,7 +396,7 @@ export const actions = {
 		return {
 			ok: true,
 			action: 'saveResults',
-			message: 'Official results saved.'
+			message: weekend.scored === 1 ? 'Official results updated.' : 'Official results saved.'
 		};
 	},
 

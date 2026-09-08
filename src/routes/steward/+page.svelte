@@ -67,23 +67,6 @@
 	</label>
 {/snippet}
 
-{#snippet resultReadout(field: ResultField)}
-	{const driver = $derived(
-		data.drivers.find((candidate) => candidate.id === data.result?.[field.name])
-	)}
-
-	<div class="result-field">
-		<dt>{field.label}</dt>
-		<dd>
-			{#if driver}
-				{driver.code} — {driver.name}
-			{:else}
-				Not saved
-			{/if}
-		</dd>
-	</div>
-{/snippet}
-
 <svelte:head>
 	<title>Steward dashboard</title>
 </svelte:head>
@@ -258,56 +241,44 @@
 			<section aria-labelledby="results-heading">
 				<h2 id="results-heading">Official results</h2>
 				{#if data.weekend.scored === 1}
-					{#if data.result}
-						<dl class="result-fields">
+					<p>Updating official results will change published scores and standings.</p>
+				{/if}
+
+				<form
+					class="results-form"
+					method="POST"
+					action={`?/saveResults&weekend=${data.weekend.id}`}
+				>
+					<input type="hidden" name="weekend_id" value={data.weekend.id} />
+
+					<fieldset>
+						<legend>Race</legend>
+
+						<div class="result-fields">
 							{#each raceResultFields as field (field.name)}
-								{@render resultReadout(field)}
+								{@render resultSelect(field)}
 							{/each}
+						</div>
+					</fieldset>
 
-							{#if data.weekend.is_sprint === 1}
-								{#each sprintResultFields as field (field.name)}
-									{@render resultReadout(field)}
-								{/each}
-							{/if}
-						</dl>
-					{:else}
-						<p>Official results have not been saved.</p>
-					{/if}
-				{:else}
-					<form
-						class="results-form"
-						method="POST"
-						action={`?/saveResults&weekend=${data.weekend.id}`}
-					>
-						<input type="hidden" name="weekend_id" value={data.weekend.id} />
-
+					{#if data.weekend.is_sprint === 1}
 						<fieldset>
-							<legend>Race</legend>
+							<legend>Sprint</legend>
 
 							<div class="result-fields">
-								{#each raceResultFields as field (field.name)}
+								{#each sprintResultFields as field (field.name)}
 									{@render resultSelect(field)}
 								{/each}
 							</div>
 						</fieldset>
+					{/if}
 
-						{#if data.weekend.is_sprint === 1}
-							<fieldset>
-								<legend>Sprint</legend>
-
-								<div class="result-fields">
-									{#each sprintResultFields as field (field.name)}
-										{@render resultSelect(field)}
-									{/each}
-								</div>
-							</fieldset>
-						{/if}
-
-						<div class="form-actions">
-							<button type="submit">Save results</button>
-						</div>
-					</form>
-				{/if}
+					<div class="form-actions">
+						<button type="submit">
+							{data.weekend.scored === 1 ? 'Update official results' : 'Save results'}
+						</button>
+					</div>
+				</form>
 			</section>
 
 			<section aria-labelledby="bold-heading">

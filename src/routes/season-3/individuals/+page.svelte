@@ -95,6 +95,8 @@
 		margin-top: 1rem;
 	}
 	.individual-metadata {
+		position: relative;
+		z-index: 1;
 		border: 1px solid var(--f1-red);
 		border-left-width: 0.25rem;
 		background: linear-gradient(
@@ -123,7 +125,7 @@
 	}
 	.point-record-list {
 		position: relative;
-		z-index: -10;
+		z-index: 0;
 		display: flex;
 		flex-direction: column;
 		margin: 0 4rem;

@@ -68,6 +68,8 @@
 		font-size: 2.25rem;
 	}
 	.team-entry {
+		position: relative;
+		z-index: 1;
 		border-left: 2rem solid transparent;
 		display: flex;
 		align-items: center;
@@ -113,7 +115,8 @@
 		font-variant-numeric: tabular-nums;
 	}
 	.team-breakdown-wrapper {
-		z-index: -10;
+		position: relative;
+		z-index: 0;
 		margin: 1px 0 4rem;
 		display: flex;
 		justify-content: center;

@@ -5,7 +5,11 @@ allowBuilds:
   sharp: true
   workerd: true
 minimumReleaseAgeExclude:
-  - '@sveltejs/kit@2.69.1'
+  - '@sveltejs/kit@2.69.1 || 2.70.4'
+  - '@sveltejs/adapter-cloudflare@7.2.10'
+  - miniflare@5.20261104.0-beta
+  - vite@8.3.6
+  - wrangler@4.158.0
 # pnpm-workspace.yaml
 overrides:
   # GHSA-pxg6-pf52-xh8x — delete once @sveltejs/kit@3 ships its own cookie >=1

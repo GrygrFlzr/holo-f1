@@ -35,7 +35,8 @@
 	 * https://developers.cloudflare.com/workers/wrangler/configuration/#environment-variables
 	 */
 	"vars": {
-		"PNPM_VERSION": "11.10.0"
+		"NODE_VERSION": "24",
+		"PNPM_VERSION": "12.18.0"
 	},
 	"r2_buckets": [
 		{
